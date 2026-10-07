@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -34,6 +35,7 @@ class Prescriptions : AppCompatActivity() {
     private lateinit var tvNoPrescriptions: TextView
 
     private var selectedFileUri: Uri? = null
+    private lateinit var ivProfile: ImageView
 
     // File picker launcher for PDF, JPG, PNG
     private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -52,6 +54,7 @@ class Prescriptions : AppCompatActivity() {
         drawerLayout = findViewById(R.id.drawerLayout)
         btnMenu = findViewById(R.id.btnMenu)
         navView = findViewById(R.id.navView)
+        ivProfile = findViewById(R.id.ivProfile)
 
         // Initialize Form Inputs
         etPatientName = findViewById(R.id.etPatientName)
@@ -63,6 +66,12 @@ class Prescriptions : AppCompatActivity() {
         btnChooseFile = findViewById(R.id.btnChooseFile)
         btnSubmitPrescription = findViewById(R.id.btnSubmitPrescription)
         tvNoPrescriptions = findViewById(R.id.tvNoPrescriptions)
+
+        //setup profile icon
+        ivProfile.setOnClickListener{
+            val intent = Intent(this, MyAccount::class.java)
+            startActivity(intent)
+        }
 
         // Setup Delivery Method Spinner
         val deliveryMethods = arrayOf("Select Method", "Home Delivery", "Store Pickup")

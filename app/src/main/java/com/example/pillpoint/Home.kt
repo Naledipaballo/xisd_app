@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -23,6 +24,7 @@ class Home : AppCompatActivity() {
     private lateinit var btnTrack: Button
     private lateinit var btnStore: Button
     private lateinit var tvWelcomeUser: TextView
+    private lateinit var ivProfile: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +39,7 @@ class Home : AppCompatActivity() {
         drawerLayout = findViewById(R.id.drawerLayout)
         btnMenu = findViewById(R.id.btnMenu)
         navView = findViewById(R.id.navView)
+        ivProfile = findViewById(R.id.ivProfile)
 
         btnShop = findViewById(R.id.btnShopMedication)
         btnCart = findViewById(R.id.btnViewCart)
@@ -45,6 +48,12 @@ class Home : AppCompatActivity() {
         btnTrack = findViewById(R.id.btnTrackOrder)
         btnStore = findViewById(R.id.btnStoreLocator)
         tvWelcomeUser = findViewById(R.id.tvWelcomeUser)
+
+        //Setup profile icon click listener toopen  my account
+        ivProfile.setOnClickListener{
+            val intent = Intent(this, MyAccount::class.java)
+            startActivity(intent)
+        }
 
         // Grab user email passed from Login/Signup if available
         val userEmail = SessionManager.email(this).ifEmpty { intent.getStringExtra("USER_EMAIL").orEmpty() }
@@ -129,4 +138,6 @@ class Home : AppCompatActivity() {
         startActivity(intent)
         finish()
     }
+
+
 }

@@ -45,12 +45,6 @@
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <ImageView
-                android:id="@+id/ivProfile"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:contentDescription="Profile"
-                android:src="@drawable/photo" />
         </LinearLayout>
 
         <!-- Form Card Container -->

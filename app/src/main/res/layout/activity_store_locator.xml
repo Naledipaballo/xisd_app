@@ -27,6 +27,7 @@
             android:layout_height="50dp"
             android:layout_marginStart="8dp"
             android:text="Search"
+            android:backgroundTint="@color/dark_blue"
             android:textAllCaps="false" />
     </LinearLayout>
 

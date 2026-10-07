@@ -6,6 +6,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -19,6 +20,7 @@ class Reminder : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var btnMenu: ImageButton
     private lateinit var navView: NavigationView
+    private lateinit var ivProfile: ImageView
 
     private lateinit var etMedicationName: EditText
     private lateinit var etDosage: EditText
@@ -38,6 +40,7 @@ class Reminder : AppCompatActivity() {
         drawerLayout = findViewById(R.id.drawerLayout)
         btnMenu = findViewById(R.id.btnMenu)
         navView = findViewById(R.id.navView)
+        ivProfile = findViewById(R.id.ivProfile)
 
         // Initialize Form Inputs
         etMedicationName = findViewById(R.id.etMedicationName)
@@ -49,6 +52,12 @@ class Reminder : AppCompatActivity() {
         etNotes = findViewById(R.id.etNotes)
         btnSaveReminder = findViewById(R.id.btnSaveReminder)
         tvViewScheduled = findViewById(R.id.tvViewScheduled)
+
+        //setup profile icon
+        ivProfile.setOnClickListener{
+            val intent= Intent(this, MyAccount::class.java)
+            startActivity(intent)
+        }
 
         // Setup Spinners
         val frequencyOptions = arrayOf("Once Daily", "Twice Daily", "Weekly", "As Needed")
