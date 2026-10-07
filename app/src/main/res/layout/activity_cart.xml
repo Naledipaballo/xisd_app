@@ -27,6 +27,14 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edit_text_background"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_marginBottom="24dp">
+
         <!-- Order Summary -->
         <TextView
             android:layout_width="wrap_content"
@@ -78,6 +86,8 @@
             android:backgroundTint="@color/dark_blue"
             android:textColor="#FFFFFF"
             android:layout_marginTop="15dp"/>
+
+    </LinearLayout>
 
     </LinearLayout>
 

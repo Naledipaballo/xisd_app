@@ -150,8 +150,8 @@
                     android:text="Your trusted online pharmacy – Pill Point Delivery."
                     android:textColor="#555555"
                     android:textSize="13sp"
-                    android:layout_marginTop="4dp" />
-            </LinearLayout>
+                    android:layout_marginTop="6dp" />
+
 
             <!-- Grid Action Buttons -->
             <LinearLayout
@@ -164,7 +164,8 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:weightSum="2"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="12dp"
+                    android:layout_marginTop="24dp">
                     <Button
                         android:id="@+id/btnShopMedication"
                         android:layout_width="0dp" android:layout_height="70dp" android:layout_weight="1" android:layout_marginEnd="6dp"
@@ -185,10 +186,19 @@
                         android:id="@+id/btnUploadPrescription"
                         android:layout_width="0dp" android:layout_height="70dp" android:layout_weight="1" android:layout_marginEnd="6dp"
                         android:backgroundTint="@color/dark_blue" android:text="Upload Prescription" android:textAllCaps="false" android:textColor="@android:color/white" android:textSize="13sp" android:textStyle="bold" />
+
                     <Button
                         android:id="@+id/btnReminders"
-                        android:layout_width="0dp" android:layout_height="70dp" android:layout_weight="1" android:layout_marginStart="6dp"
-                        android:backgroundTint="@color/dark_blue" android:text="Medication Reminders" android:textAllCaps="false" android:textColor="@android:color/white" android:textSize="13sp" android:textStyle="bold" />
+                        android:layout_width="0dp"
+                        android:layout_height="70dp"
+                        android:layout_marginStart="6dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="@color/dark_blue"
+                        android:text="Medication Reminders"
+                        android:textAllCaps="false"
+                        android:textColor="@android:color/white"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -206,6 +216,7 @@
                         android:layout_width="0dp" android:layout_height="70dp" android:layout_weight="1" android:layout_marginStart="6dp"
                         android:backgroundTint="@color/dark_blue" android:text="Store Locator" android:textAllCaps="false" android:textColor="@android:color/white" android:textSize="14sp" android:textStyle="bold" />
                 </LinearLayout>
+            </LinearLayout>
             </LinearLayout>
 
         </LinearLayout>

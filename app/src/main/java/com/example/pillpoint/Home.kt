@@ -7,11 +7,13 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 
 class Home : AppCompatActivity() {
+
 
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var btnMenu: ImageButton
@@ -27,6 +29,8 @@ class Home : AppCompatActivity() {
     private lateinit var ivProfile: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        //force the app to stay in light mode
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
         if (!SessionManager.isLoggedIn(this)) {
             redirectToLogin()
