@@ -51,7 +51,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:contentDescription="Profile"
-                    android:src="@drawable/ic_launcher_foreground" />
+                    android:src="@drawable/photo" />
             </LinearLayout>
 
             <!-- Dashboard Title -->

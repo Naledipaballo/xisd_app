@@ -33,7 +33,8 @@
                 android:layout_height="45dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Menu"
-                android:src="@drawable/ic_launcher_foreground" />
+                android:src="@drawable/ic_menu" />
+
 
             <TextView
                 android:layout_width="0dp"
@@ -50,7 +51,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:contentDescription="Profile"
-                android:src="@drawable/ic_launcher_foreground" />
+                android:src="@drawable/photo" />
         </LinearLayout>
 
         <!-- Form Card Container -->
