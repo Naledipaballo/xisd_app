@@ -12,17 +12,17 @@
         android:gravity="center_vertical">
 
         <EditText
-            android:id="@+id/etLocationSearch"
+            android:id="@+id/etSearchStore"
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:layout_weight="1"
             android:background="@drawable/edit_text_background"
-            android:hint="Search area or city"
+            android:hint="Search store name or address"
             android:inputType="text"
             android:padding="12dp" />
 
         <Button
-            android:id="@+id/btnSearchLocation"
+            android:id="@+id/btnSearchStore"
             android:layout_width="wrap_content"
             android:layout_height="50dp"
             android:layout_marginStart="8dp"
@@ -41,10 +41,9 @@
         android:textColor="@color/dark_blue"
         android:textStyle="bold" />
 
+    <!-- Invalid osmdroid attributes removed and ID matched to 'mapView' -->
     <org.osmdroid.views.MapView
-        android:id="@+id/map"
-        android:tilesource="Mapnik"
-        android:useDataConnection="true"
+        android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
