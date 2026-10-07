@@ -1,0 +1,36 @@
+<resources>
+
+    <string name="app_name">Pill Point Delivery</string>
+
+    <string name="welcome">Welcome</string>
+
+    <string name="login">Login</string>
+    <string name="signup">Sign Up</string>
+    <string name="logout">Logout</string>
+
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+
+    <string name="home">Home</string>
+    <string name="shop">Shop Medicines</string>
+    <string name="cart">My Cart</string>
+    <string name="checkout">Checkout</string>
+
+    <string name="upload">Upload Prescription</string>
+    <string name="track">Track Order</string>
+
+    <string name="reminder">Medication Reminder</string>
+
+    <string name="profile">My Profile</string>
+
+    <string name="about">About</string>
+
+    <string name="contact">Contact Us</string>
+
+    <string name="place_order">Place Order</string>
+
+    <string name="continue_shopping">Continue Shopping</string>
+
+
+
+</resources>

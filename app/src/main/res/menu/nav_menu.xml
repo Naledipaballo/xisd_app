@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/nav_dashboard" android:title="Dashboard" />
+    <item android:id="@+id/nav_shop" android:title="Shop Medication" />
+    <item android:id="@+id/nav_cart" android:title="My Cart" />
+    <item android:id="@+id/nav_prescription" android:title="Prescriptions" />
+    <item android:id="@+id/nav_account" android:title="My Account" />
+    <item android:id="@+id/nav_reminders" android:title="Medication Reminders" />
+    <item android:id="@+id/nav_store" android:title="Store Locator" />
+    <item android:id="@+id/nav_track" android:title="Track Order" />
+    <item android:id="@+id/nav_logout" android:title="Logout" />
+</menu>

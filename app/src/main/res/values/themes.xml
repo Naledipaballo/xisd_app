@@ -1,0 +1,29 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Pillpoint" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here.-->
+
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+        <item name="colorPrimary">@color/blue</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <item name="colorSecondary">@color/red</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <item name="android:statusBarColor">@color/dark_blue</item>
+        <item name="android:navigationBarColor">@color/blue</item>
+    </style>
+
+    <style name="CircleImage">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="Theme.Pillpoint" parent="Base.Theme.Pillpoint" />
+
+    <style name="BluePickerTheme" parent="ThemeOverlay.AppCompat.Light">
+        <item name="colorPrimary">#0D1B2A</item> <!-- Header Background -->
+        <item name="colorAccent">#0D1B2A</item>  <!-- Selected Day/Time Circle Accent -->
+    </style>
+</resources>
