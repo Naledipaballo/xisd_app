@@ -2,20 +2,16 @@ package com.example.pillpoint
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
-import android.text.InputType
-import android.widget.ImageButton
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
-import com.example.pillpoint.database.AppDatabase
-import com.example.pillpoint.repository.AuthRepository
-import kotlinx.coroutines.launch
 
 class Signup : AppCompatActivity() {
 
@@ -30,16 +26,10 @@ class Signup : AppCompatActivity() {
     private lateinit var signupBtn: Button
     private lateinit var loginLink: TextView
 
-    private lateinit var authRepository: AuthRepository
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_signup)
-
-        // Initialize Room Database and Auth Repository
-        val appDao = AppDatabase.getDatabase(applicationContext).appDao()
-        authRepository = AuthRepository(appDao)
 
         // Bind UI elements to match your layout IDs
         fullNameInput = findViewById(R.id.etFullName)
@@ -97,24 +87,31 @@ class Signup : AppCompatActivity() {
             return
         }
 
-        lifecycleScope.launch {
-            val result = authRepository.registerUser(
-                fullName = name,
-                email = email,
-                passwordRaw = password,
-                phone = phone,
-                address = address
-            )
+        // Split Full Name into First Name and Last Name for PHP Backend
+        val nameParts = name.split(" ", limit = 2)
+        val firstName = nameParts.getOrElse(0) { name }
+        val lastName = nameParts.getOrElse(1) { "" }
 
-            result.onSuccess { user ->
-                Toast.makeText(this@Signup, "Account created successfully!", Toast.LENGTH_SHORT).show()
+        signupBtn.isEnabled = false
+
+        // Register user using ApiClient
+        ApiClient.register(
+            firstName = firstName,
+            lastName = lastName,
+            username = email, // standardizing username with email
+            email = email,
+            password = password
+        ) { result ->
+            signupBtn.isEnabled = true
+            if (result.success) {
+                Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT).show()
                 val intent = Intent(this@Signup, login::class.java).apply {
-                    putExtra("USER_EMAIL", user.email)
+                    putExtra("USER_EMAIL", email)
                 }
                 startActivity(intent)
                 finishAffinity()
-            }.onFailure { exception ->
-                Toast.makeText(this@Signup, exception.message ?: "Registration failed", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this@Signup, result.message, Toast.LENGTH_LONG).show()
             }
         }
     }

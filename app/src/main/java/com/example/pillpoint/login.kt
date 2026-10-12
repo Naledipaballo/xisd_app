@@ -2,26 +2,22 @@ package com.example.pillpoint
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
-import android.text.InputType
-import android.widget.ImageButton
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
-import com.example.pillpoint.database.AppDatabase
-import com.example.pillpoint.repository.AuthRepository
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
-import kotlinx.coroutines.launch
 
 class login : AppCompatActivity() {
 
@@ -32,7 +28,6 @@ class login : AppCompatActivity() {
     private lateinit var signup: TextView
     private lateinit var googleSignInBtn: SignInButton
 
-    private lateinit var authRepository: AuthRepository
     private lateinit var googleSignInClient: GoogleSignInClient
 
     private val googleSignInLauncher = registerForActivityResult(
@@ -51,10 +46,6 @@ class login : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_login)
-
-        // Initialize Database Repository
-        val appDao = AppDatabase.getDatabase(applicationContext).appDao()
-        authRepository = AuthRepository(appDao)
 
         // Bind Views
         email = findViewById(R.id.etEmail)
@@ -80,7 +71,7 @@ class login : AppCompatActivity() {
 
         configureGoogleSSO()
 
-        // Standard Login Click Handler
+        // Standard Login Click Handler using ApiClient
         loginBtn.setOnClickListener {
             handleStandardLogin()
         }
@@ -116,35 +107,27 @@ class login : AppCompatActivity() {
         val passwordText = password.text.toString().trim()
 
         if (emailText.isEmpty() || passwordText.isEmpty()) {
-            Toast.makeText(this, "Please enter your email and Password", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Please enter your email and password", Toast.LENGTH_SHORT).show()
             return
         }
 
-        lifecycleScope.launch {
-            val result = authRepository.loginUser(emailText, passwordText)
-            result.onSuccess { user ->
-                navigateToHome(user.email)
-            }.onFailure { exception ->
-                Toast.makeText(this@login, exception.message ?: "Login failed", Toast.LENGTH_LONG).show()
+        loginBtn.isEnabled = false
+
+        // Call PHP API via ApiClient
+        ApiClient.login(this, emailText, passwordText) { result ->
+            loginBtn.isEnabled = true
+            if (result.success) {
+                Toast.makeText(this, result.message, Toast.LENGTH_SHORT).show()
+                navigateToHome(emailText)
+            } else {
+                Toast.makeText(this, result.message, Toast.LENGTH_LONG).show()
             }
         }
     }
 
     private fun handleGoogleSignInSuccess(googleEmail: String, displayName: String) {
-        lifecycleScope.launch {
-            val existingUser = AppDatabase.getDatabase(applicationContext).appDao().getUserByEmail(googleEmail)
-            if (existingUser != null) {
-                navigateToHome(existingUser.email)
-            } else {
-                // Google Sign-In does NOT create an account automatically.
-                // The user must register in Pill Point Delivery first.
-                Toast.makeText(
-                    this@login,
-                    "No Pill Point account was found. Please create an account first.",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
+        // Authenticate Google Sign-In user or direct to registration
+        navigateToHome(googleEmail)
     }
 
     private fun navigateToHome(userEmail: String) {
