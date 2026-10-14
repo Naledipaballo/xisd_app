@@ -34,17 +34,21 @@ class Home : AppCompatActivity() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
 
-        if (!SessionManager.isLoggedIn(this)) {
+        // Initialize Firebase Auth first
+        auth = FirebaseAuth.getInstance()
+
+        // Verify login status via Firebase OR SessionManager
+        val currentUser = auth.currentUser
+        val isUserLoggedIn = currentUser != null || SessionManager.isLoggedIn(this)
+
+        if (!isUserLoggedIn) {
             redirectToLogin()
             return
         }
 
         setContentView(R.layout.activity_home)
 
-        // Initialize Firebase Auth
-        auth = FirebaseAuth.getInstance()
-
-        // Initialize UI components
+        // Initialize UI components safely
         drawerLayout = findViewById(R.id.drawerLayout)
         btnMenu = findViewById(R.id.btnMenu)
         navView = findViewById(R.id.navView)
@@ -58,24 +62,23 @@ class Home : AppCompatActivity() {
         btnStore = findViewById(R.id.btnStoreLocator)
         tvWelcomeUser = findViewById(R.id.tvWelcomeUser)
 
-        // Setup profile icon click listener to open My Account
+        // Setup profile icon click listener
         ivProfile.setOnClickListener {
             val intent = Intent(this, MyAccount::class.java)
             startActivity(intent)
         }
 
-        // Grab current user email from Firebase or SessionManager
-        val currentUser = auth.currentUser
+        // Grab user email
         val userEmail = currentUser?.email ?: SessionManager.email(this).ifEmpty { intent.getStringExtra("USER_EMAIL").orEmpty() }
 
         if (userEmail.isNotEmpty()) {
             tvWelcomeUser.text = "Welcome back, $userEmail!"
         }
 
-        // Populate Navigation Drawer Header with User Info
+        // Populate Navigation Drawer Header safely
         setupDrawerHeader(userEmail)
 
-        // Hamburger menu click opens the drawer from the left
+        // Hamburger menu click
         btnMenu.setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
         }
@@ -83,82 +86,49 @@ class Home : AppCompatActivity() {
         // Handle navigation drawer item clicks
         navView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.nav_dashboard -> {
-                    // Already on dashboard
-                }
-                R.id.nav_shop -> {
-                    startActivity(Intent(this, Shop::class.java))
-                }
-                R.id.nav_cart -> {
-                    startActivity(Intent(this, Cart::class.java))
-                }
-                R.id.nav_account -> {
-                    startActivity(Intent(this, MyAccount::class.java))
-                }
-                R.id.nav_prescription -> {
-                    startActivity(Intent(this, Prescriptions::class.java))
-                }
-                R.id.nav_reminders -> {
-                    startActivity(Intent(this, Reminder::class.java))
-                }
-                R.id.nav_store -> {
-                    startActivity(Intent(this, Store_Locator::class.java))
-                }
-                R.id.nav_track -> {
-                    startActivity(Intent(this, TrackOrder::class.java))
-                }
-                R.id.nav_logout -> {
-                    logoutUser()
-                }
+                R.id.nav_dashboard -> { }
+                R.id.nav_shop -> startActivity(Intent(this, Shop::class.java))
+                R.id.nav_cart -> startActivity(Intent(this, Cart::class.java))
+                R.id.nav_account -> startActivity(Intent(this, MyAccount::class.java))
+                R.id.nav_prescription -> startActivity(Intent(this, Prescriptions::class.java))
+                R.id.nav_reminders -> startActivity(Intent(this, Reminder::class.java))
+                R.id.nav_store -> startActivity(Intent(this, Store_Locator::class.java))
+                R.id.nav_track -> startActivity(Intent(this, TrackOrder::class.java))
+                R.id.nav_logout -> logoutUser()
             }
             drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
 
-        // Handle direct grid button clicks on the dashboard
-        btnShop.setOnClickListener {
-            startActivity(Intent(this, Shop::class.java))
-        }
-
-        btnCart.setOnClickListener {
-            startActivity(Intent(this, Cart::class.java))
-        }
-
-        btnPrescription.setOnClickListener {
-            startActivity(Intent(this, Prescriptions::class.java))
-        }
-
-        btnReminders.setOnClickListener {
-            startActivity(Intent(this, Reminder::class.java))
-        }
-
-        btnTrack.setOnClickListener {
-            startActivity(Intent(this, TrackOrder::class.java))
-        }
-
-        btnStore.setOnClickListener {
-            startActivity(Intent(this, Store_Locator::class.java))
-        }
+        // Dashboard buttons
+        btnShop.setOnClickListener { startActivity(Intent(this, Shop::class.java)) }
+        btnCart.setOnClickListener { startActivity(Intent(this, Cart::class.java)) }
+        btnPrescription.setOnClickListener { startActivity(Intent(this, Prescriptions::class.java)) }
+        btnReminders.setOnClickListener { startActivity(Intent(this, Reminder::class.java)) }
+        btnTrack.setOnClickListener { startActivity(Intent(this, TrackOrder::class.java)) }
+        btnStore.setOnClickListener { startActivity(Intent(this, Store_Locator::class.java)) }
     }
 
     private fun setupDrawerHeader(userEmail: String) {
-        val headerView = navView.getHeaderView(0)
-        val txtEmail = headerView.findViewById<TextView>(R.id.txtEmail)
-        val txtUserName = headerView.findViewById<TextView>(R.id.txtUserName)
+        if (navView.headerCount > 0) {
+            val headerView = navView.getHeaderView(0)
+            val txtEmail = headerView.findViewById<TextView>(R.id.txtEmail)
+            val txtUserName = headerView.findViewById<TextView>(R.id.txtUserName)
 
-        if (userEmail.isNotEmpty()) {
-            txtEmail.text = userEmail
-        } else {
-            txtEmail.text = "user@email.com"
-        }
+            if (txtEmail != null) {
+                txtEmail.text = if (userEmail.isNotEmpty()) userEmail else "user@email.com"
+            }
 
-        val currentUser = auth.currentUser
-        val displayName = currentUser?.displayName
-        if (!displayName.isNullOrBlank()) {
-            val firstName = displayName.split(" ").firstOrNull() ?: ""
-            txtUserName.text = "Welcome, $firstName"
-        } else {
-            txtUserName.text = "Welcome"
+            if (txtUserName != null) {
+                val currentUser = auth.currentUser
+                val displayName = currentUser?.displayName
+                if (!displayName.isNullOrBlank()) {
+                    val firstName = displayName.split(" ").firstOrNull() ?: ""
+                    txtUserName.text = "Welcome, $firstName"
+                } else {
+                    txtUserName.text = "Welcome"
+                }
+            }
         }
     }
 

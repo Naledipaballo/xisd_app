@@ -134,24 +134,18 @@
             android:textSize="14sp"
             android:textStyle="bold" />
 
-        <!-- Google SSO Button (Customized MaterialButton to match shape) -->
-        <com.google.android.material.button.MaterialButton
+        <!-- Google SSO Button (Using standard Button with edit_text_background for rounded shape to prevent theme crash) -->
+        <Button
             android:id="@+id/btnGoogleSignIn"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
+            android:layout_height="wrap_content"
             android:backgroundTint="@android:color/white"
+            android:minHeight="52dp"
             android:text="Sign In with Google"
             android:textAllCaps="false"
             android:textColor="#333333"
             android:textSize="15sp"
-            android:textStyle="bold"
-            app:cornerRadius="26dp"
-            app:iconGravity="textStart"
-            app:iconPadding="12dp"
-            app:iconTint="@null"
-            app:strokeColor="#CCCCCC"
-            app:strokeWidth="1dp" />
+            android:textStyle="bold" />
 
         <!-- Registration link -->
         <TextView

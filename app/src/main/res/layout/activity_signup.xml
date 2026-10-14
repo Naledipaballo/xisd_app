@@ -40,13 +40,35 @@
             android:layout_height="wrap_content"
             android:layout_gravity="start"
             android:layout_marginTop="8dp"
-            android:text="Full Name"
+            android:text="First Name"
             android:textColor="@color/dark_blue"
             android:textSize="16sp"
             android:textStyle="bold" />
 
         <EditText
-            android:id="@+id/etFullName"
+            android:id="@+id/etFirstName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/edit_text_background"
+            android:hint="John Doe"
+            android:inputType="textPersonName"
+            android:minHeight="50dp"
+            android:padding="14dp" />
+
+        <!--lastname-->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_marginTop="8dp"
+            android:text="Last Name"
+            android:textColor="@color/dark_blue"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/etLastName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"

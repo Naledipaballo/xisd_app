@@ -15,7 +15,8 @@ import com.google.firebase.database.FirebaseDatabase
 
 class Signup : AppCompatActivity() {
 
-    private lateinit var fullName: EditText
+    private lateinit var firstName: EditText
+    private lateinit var lastName: EditText
     private lateinit var email: EditText
     private lateinit var phone: EditText
     private lateinit var address: EditText
@@ -33,7 +34,8 @@ class Signup : AppCompatActivity() {
         // Initialize Firebase Auth
         auth = FirebaseAuth.getInstance()
 
-        fullName = findViewById(R.id.etFullName)
+        firstName = findViewById(R.id.etFirstName)
+        lastName = findViewById(R.id.etLastName)
         email = findViewById(R.id.etEmail)
         phone = findViewById(R.id.etPhone)
         address = findViewById(R.id.etAddress)
@@ -70,26 +72,26 @@ class Signup : AppCompatActivity() {
 
         if (visible) {
             field.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            toggleButton.setImageResource(R.drawable.ic_visibility_off) // Ensure ic_visibility_off exists in drawable
+            toggleButton.setImageResource(R.drawable.ic_visibility_off)
         } else {
             field.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
             toggleButton.setImageResource(R.drawable.ic_visibility)
         }
 
-        // Preserve standard font typeface and cursor position
         field.typeface = Typeface.DEFAULT
         field.setSelection(cursorPosition.coerceAtMost(field.text.length))
     }
 
     private fun createAccount() {
-        val nameText = fullName.text.toString().trim()
+        val firstNameText = firstName.text.toString().trim()
+        val lastNameText = lastName.text.toString().trim()
         val emailText = email.text.toString().trim()
         val phoneText = phone.text.toString().trim()
         val addressText = address.text.toString().trim()
         val passwordText = password.text.toString()
         val confirmText = confirmPassword.text.toString()
 
-        if (nameText.isBlank() || emailText.isBlank() ||
+        if (firstNameText.isBlank() || lastNameText.isBlank() || emailText.isBlank() ||
             passwordText.isBlank() || confirmText.isBlank()
         ) {
             showMessage("Please complete all required fields.")
@@ -98,11 +100,6 @@ class Signup : AppCompatActivity() {
 
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(emailText).matches()) {
             email.error = "Enter a valid email address."
-            return
-        }
-
-        if (passwordText.toByteArray(Charsets.UTF_8).size > 72) {
-            password.error = "Password must not exceed 72 UTF-8 bytes."
             return
         }
 
@@ -115,10 +112,6 @@ class Signup : AppCompatActivity() {
             confirmPassword.error = "Passwords do not match."
             return
         }
-
-        val nameParts = nameText.split("\\s+".toRegex(), limit = 2)
-        val firstName = nameParts[0]
-        val lastName = if (nameParts.size > 1) nameParts[1] else ""
 
         val signupButton: Button = findViewById(R.id.btnSignup)
         signupButton.isEnabled = false
@@ -134,8 +127,8 @@ class Signup : AppCompatActivity() {
                     val usersRef = database.getReference("users")
 
                     val userData = mapOf(
-                        "firstName" to firstName,
-                        "lastName" to lastName,
+                        "firstName" to firstNameText,
+                        "lastName" to lastNameText,
                         "email" to emailText,
                         "phone" to phoneText,
                         "address" to addressText

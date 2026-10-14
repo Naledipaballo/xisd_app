@@ -75,11 +75,6 @@
             android:name=".Store_Locator"
             android:exported="false" />
 
-        <activity
-            android:name=".ui.SettingsActivity"
-            android:exported="false"
-            android:label="Account &amp; Settings"/>
-
         <!-- Broadcast Receivers -->
         <receiver
             android:name=".ReminderReceiver"
