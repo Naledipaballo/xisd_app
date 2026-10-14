@@ -113,7 +113,7 @@ class MyAccount : AppCompatActivity() {
     private fun logoutUser() {
         SessionManager.logout(this)
         Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
-        val intent = Intent(this, login::class.java)
+        val intent = Intent(this, Login::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
         finish()

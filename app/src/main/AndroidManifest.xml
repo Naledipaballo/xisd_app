@@ -29,9 +29,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Pillpoint">
 
-        <!-- Single App Launcher Entry Point -->
+        <!-- Login is now the App Launcher Entry Point -->
         <activity
-            android:name=".MainActivity"
+            android:name=".Login"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,12 +39,14 @@
             </intent-filter>
         </activity>
 
+        <!-- MainActivity is opened after successful login -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true" />
+
         <!-- Standard Activities -->
         <activity
             android:name=".MyAccount"
-            android:exported="false" />
-        <activity
-            android:name=".login"
             android:exported="false" />
         <activity
             android:name=".Signup"
@@ -83,8 +85,6 @@
         <receiver
             android:name=".ReminderReceiver"
             android:exported="false" />
-
-
 
     </application>
 

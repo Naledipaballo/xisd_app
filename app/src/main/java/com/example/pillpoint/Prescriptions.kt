@@ -114,7 +114,7 @@ class Prescriptions : AppCompatActivity() {
                 }
                 R.id.nav_logout -> {
                     SessionManager.logout(this)
-                    val intent = Intent(this, login::class.java)
+                    val intent = Intent(this, Login::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
                     startActivity(intent)
                     finish()

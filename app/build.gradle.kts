@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -42,13 +43,20 @@ android {
 }
 
 dependencies {
+    // Import the Firebase BoM (Bill of Materials) to manage versions automatically
+    implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
+
+    // Declare the Firebase dependencies without version numbers
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-database")
+
     // Room Database
     val roomVersion = "2.8.4"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
 
-    // Lifecycle & Coroutine Scopes (Fixes lifecycleScope errors)
+    // Lifecycle & Coroutine Scopes
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
 
     // Project Dependencies

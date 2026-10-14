@@ -1,6 +1,7 @@
 package com.example.pillpoint
 
 import android.content.Intent
+import android.graphics.Typeface
 import android.os.Bundle
 import android.text.InputType
 import android.widget.Button
@@ -8,126 +9,159 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 class Signup : AppCompatActivity() {
 
-    private lateinit var fullNameInput: EditText
-    private lateinit var emailInput: EditText
-    private lateinit var phoneInput: EditText
-    private lateinit var addressInput: EditText
-    private lateinit var passwordInput: EditText
-    private lateinit var confirmPasswordInput: EditText
-    private lateinit var togglePassword: ImageButton
-    private lateinit var toggleConfirmPassword: ImageButton
-    private lateinit var signupBtn: Button
-    private lateinit var loginLink: TextView
+    private lateinit var fullName: EditText
+    private lateinit var email: EditText
+    private lateinit var phone: EditText
+    private lateinit var address: EditText
+    private lateinit var password: EditText
+    private lateinit var confirmPassword: EditText
+    private lateinit var auth: FirebaseAuth
+
+    private var passwordVisible = false
+    private var confirmPasswordVisible = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_signup)
 
-        // Bind UI elements to match your layout IDs
-        fullNameInput = findViewById(R.id.etFullName)
-        emailInput = findViewById(R.id.etEmail)
-        phoneInput = findViewById(R.id.etPhone)
-        addressInput = findViewById(R.id.etAddress)
-        passwordInput = findViewById(R.id.etPassword)
-        confirmPasswordInput = findViewById(R.id.etConfirmPassword)
-        togglePassword = findViewById(R.id.btnTogglePassword)
-        toggleConfirmPassword = findViewById(R.id.btnToggleConfirmPassword)
+        // Initialize Firebase Auth
+        auth = FirebaseAuth.getInstance()
 
-        setupPasswordToggle(passwordInput, togglePassword)
-        setupPasswordToggle(confirmPasswordInput, toggleConfirmPassword)
-        signupBtn = findViewById(R.id.btnSignup)
-        loginLink = findViewById(R.id.tvLoginLink)
+        fullName = findViewById(R.id.etFullName)
+        email = findViewById(R.id.etEmail)
+        phone = findViewById(R.id.etPhone)
+        address = findViewById(R.id.etAddress)
+        password = findViewById(R.id.etPassword)
+        confirmPassword = findViewById(R.id.etConfirmPassword)
 
-        // Handle Sign Up click event
-        signupBtn.setOnClickListener {
-            handleUserRegistration()
+        val togglePassword: ImageButton = findViewById(R.id.btnTogglePassword)
+        val toggleConfirmPassword: ImageButton = findViewById(R.id.btnToggleConfirmPassword)
+        val signupButton: Button = findViewById(R.id.btnSignup)
+        val loginLink: TextView = findViewById(R.id.tvLoginLink)
+
+        togglePassword.setOnClickListener {
+            passwordVisible = !passwordVisible
+            toggleVisibility(password, togglePassword, passwordVisible)
         }
 
-        // Handle navigation back to Login screen
+        toggleConfirmPassword.setOnClickListener {
+            confirmPasswordVisible = !confirmPasswordVisible
+            toggleVisibility(confirmPassword, toggleConfirmPassword, confirmPasswordVisible)
+        }
+
+        signupButton.setOnClickListener {
+            createAccount()
+        }
+
         loginLink.setOnClickListener {
+            startActivity(Intent(this, Login::class.java))
             finish()
         }
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
     }
 
-    private fun handleUserRegistration() {
-        val name = fullNameInput.text.toString().trim()
-        val email = emailInput.text.toString().trim()
-        val phone = phoneInput.text.toString().trim()
-        val address = addressInput.text.toString().trim()
-        val password = passwordInput.text.toString().trim()
-        val confirmPassword = confirmPasswordInput.text.toString().trim()
+    private fun toggleVisibility(field: EditText, toggleButton: ImageButton, visible: Boolean) {
+        val cursorPosition = field.selectionStart.coerceAtLeast(0)
 
-        if (name.isEmpty() || email.isEmpty() || phone.isEmpty() || address.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-            Toast.makeText(this, "Please fill in all registration fields", Toast.LENGTH_SHORT).show()
+        if (visible) {
+            field.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            toggleButton.setImageResource(R.drawable.ic_visibility_off) // Ensure ic_visibility_off exists in drawable
+        } else {
+            field.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            toggleButton.setImageResource(R.drawable.ic_visibility)
+        }
+
+        // Preserve standard font typeface and cursor position
+        field.typeface = Typeface.DEFAULT
+        field.setSelection(cursorPosition.coerceAtMost(field.text.length))
+    }
+
+    private fun createAccount() {
+        val nameText = fullName.text.toString().trim()
+        val emailText = email.text.toString().trim()
+        val phoneText = phone.text.toString().trim()
+        val addressText = address.text.toString().trim()
+        val passwordText = password.text.toString()
+        val confirmText = confirmPassword.text.toString()
+
+        if (nameText.isBlank() || emailText.isBlank() ||
+            passwordText.isBlank() || confirmText.isBlank()
+        ) {
+            showMessage("Please complete all required fields.")
             return
         }
 
-        if (password != confirmPassword) {
-            confirmPasswordInput.error = "Passwords do not match"
-            Toast.makeText(this, "Password and Confirm Password must match", Toast.LENGTH_SHORT).show()
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(emailText).matches()) {
+            email.error = "Enter a valid email address."
             return
         }
 
-        if (password.length < 6) {
-            passwordInput.error = "Password must be at least 6 characters"
+        if (passwordText.toByteArray(Charsets.UTF_8).size > 72) {
+            password.error = "Password must not exceed 72 UTF-8 bytes."
             return
         }
 
-        // Split Full Name into First Name and Last Name for PHP Backend
-        val nameParts = name.split(" ", limit = 2)
-        val firstName = nameParts.getOrElse(0) { name }
-        val lastName = nameParts.getOrElse(1) { "" }
+        if (passwordText.length < 6) {
+            password.error = "Password must be at least 6 characters."
+            return
+        }
 
-        signupBtn.isEnabled = false
+        if (passwordText != confirmText) {
+            confirmPassword.error = "Passwords do not match."
+            return
+        }
 
-        // Register user using ApiClient
-        ApiClient.register(
-            firstName = firstName,
-            lastName = lastName,
-            username = email, // standardizing username with email
-            email = email,
-            password = password
-        ) { result ->
-            signupBtn.isEnabled = true
-            if (result.success) {
-                Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT).show()
-                val intent = Intent(this@Signup, login::class.java).apply {
-                    putExtra("USER_EMAIL", email)
+        val nameParts = nameText.split("\\s+".toRegex(), limit = 2)
+        val firstName = nameParts[0]
+        val lastName = if (nameParts.size > 1) nameParts[1] else ""
+
+        val signupButton: Button = findViewById(R.id.btnSignup)
+        signupButton.isEnabled = false
+
+        // Create user using Firebase Authentication
+        auth.createUserWithEmailAndPassword(emailText, passwordText)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    val firebaseUser = auth.currentUser
+                    val userId = firebaseUser?.uid ?: emailText.replace(".", "_")
+
+                    val database = FirebaseDatabase.getInstance()
+                    val usersRef = database.getReference("users")
+
+                    val userData = mapOf(
+                        "firstName" to firstName,
+                        "lastName" to lastName,
+                        "email" to emailText,
+                        "phone" to phoneText,
+                        "address" to addressText
+                    )
+
+                    usersRef.child(userId).setValue(userData)
+                        .addOnSuccessListener {
+                            signupButton.isEnabled = true
+                            showMessage("Account created successfully.")
+                            val intent = Intent(this, Login::class.java)
+                            intent.putExtra("USER_EMAIL", emailText)
+                            startActivity(intent)
+                            finish()
+                        }
+                        .addOnFailureListener { e ->
+                            signupButton.isEnabled = true
+                            showMessage("Failed to save profile: ${e.message}")
+                        }
+                } else {
+                    signupButton.isEnabled = true
+                    showMessage("Authentication failed: ${task.exception?.message}")
                 }
-                startActivity(intent)
-                finishAffinity()
-            } else {
-                Toast.makeText(this@Signup, result.message, Toast.LENGTH_LONG).show()
             }
-        }
     }
 
-    private fun setupPasswordToggle(field: EditText, toggle: ImageButton) {
-        var visible = false
-        toggle.setOnClickListener {
-            visible = !visible
-            field.inputType = if (visible) {
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            } else {
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            }
-            field.setSelection(field.text.length)
-            toggle.setImageResource(if (visible) R.drawable.ic_visibility_off else R.drawable.ic_visibility)
-            toggle.contentDescription = if (visible) "Hide password" else "Show password"
-        }
+    private fun showMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 }

@@ -10,6 +10,8 @@ activity = "1.8.2"
 constraintlayout = "2.2.2"
 playServicesAuth="21.0.0"
 jbcrypt="0.4"
+googleGmsGoogleServices = "4.5.0"
+firebaseDatabase = "23.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -22,8 +24,10 @@ androidx-activity = { group = "androidx.activity", name = "activity", version.re
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 play-services-auth={ group="com.google.android.gms", name="play-services-auth", version.ref="playServicesAuth"}
 jbcrypt={ group="org.mindrot", name="jbcrypt", version.ref="jbcrypt"}
+firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 ksp={id="com.google.devtools.ksp", version="1.9.22-1.0.17"}
+google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
 

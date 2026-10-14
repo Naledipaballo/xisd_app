@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         // Wait for 3 seconds before opening the Login screen
         Handler(Looper.getMainLooper()).postDelayed({
 
-            val intent = Intent(this, login::class.java)
+            val intent = Intent(this, Login::class.java)
             startActivity(intent)
 
             // Close the splash activity

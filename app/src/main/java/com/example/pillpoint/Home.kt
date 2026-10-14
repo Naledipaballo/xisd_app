@@ -99,7 +99,7 @@ class Home : AppCompatActivity() {
                 }
                 R.id.nav_logout -> {
                     SessionManager.logout(this)
-                    val intent = Intent(this, login::class.java).apply {
+                    val intent = Intent(this, Login::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     }
                     startActivity(intent)
@@ -136,7 +136,7 @@ class Home : AppCompatActivity() {
     }
 
     private fun redirectToLogin() {
-        val intent = Intent(this, login::class.java).apply {
+        val intent = Intent(this, Login::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         startActivity(intent)
