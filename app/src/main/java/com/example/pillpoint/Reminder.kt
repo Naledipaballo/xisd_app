@@ -14,9 +14,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
 
 class Reminder : AppCompatActivity() {
 
+    private lateinit var auth: FirebaseAuth
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var btnMenu: ImageButton
     private lateinit var navView: NavigationView
@@ -36,6 +38,9 @@ class Reminder : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_reminder)
 
+        // Initialize Firebase Auth
+        auth = FirebaseAuth.getInstance()
+
         // Initialize Layout & Navigation Drawer
         drawerLayout = findViewById(R.id.drawerLayout)
         btnMenu = findViewById(R.id.btnMenu)
@@ -53,9 +58,12 @@ class Reminder : AppCompatActivity() {
         btnSaveReminder = findViewById(R.id.btnSaveReminder)
         tvViewScheduled = findViewById(R.id.tvViewScheduled)
 
-        //setup profile icon
-        ivProfile.setOnClickListener{
-            val intent= Intent(this, MyAccount::class.java)
+        // Setup Navigation Drawer Header with User Info
+        setupDrawerHeader()
+
+        // Setup profile icon click listener to open My Account
+        ivProfile.setOnClickListener {
+            val intent = Intent(this, MyAccount::class.java)
             startActivity(intent)
         }
 
@@ -88,7 +96,6 @@ class Reminder : AppCompatActivity() {
                 }
                 R.id.nav_account -> {
                     startActivity(Intent(this, MyAccount::class.java))
-                    finish()
                 }
                 R.id.nav_prescription -> {
                     startActivity(Intent(this, Prescriptions::class.java))
@@ -104,11 +111,7 @@ class Reminder : AppCompatActivity() {
                     startActivity(Intent(this, TrackOrder::class.java))
                 }
                 R.id.nav_logout -> {
-                    SessionManager.logout(this)
-                    val intent = Intent(this, Login::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(intent)
-                    finish()
+                    logoutUser()
                 }
             }
             drawerLayout.closeDrawer(GravityCompat.START)
@@ -134,5 +137,34 @@ class Reminder : AppCompatActivity() {
         tvViewScheduled.setOnClickListener {
             Toast.makeText(this, "Opening scheduled reminders...", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun setupDrawerHeader() {
+        val headerView = navView.getHeaderView(0)
+        val txtEmail = headerView.findViewById<TextView>(R.id.txtEmail)
+        val txtUserName = headerView.findViewById<TextView>(R.id.txtUserName)
+
+        val currentUser = auth.currentUser
+        val userEmail = currentUser?.email ?: SessionManager.email(this).ifEmpty { intent.getStringExtra("USER_EMAIL").orEmpty() }
+
+        txtEmail.text = if (userEmail.isNotEmpty()) userEmail else "user@email.com"
+
+        val displayName = currentUser?.displayName
+        if (!displayName.isNullOrBlank()) {
+            val firstName = displayName.split(" ").firstOrNull() ?: ""
+            txtUserName.text = "Welcome, $firstName"
+        } else {
+            txtUserName.text = "Welcome"
+        }
+    }
+
+    private fun logoutUser() {
+        SessionManager.logout(this)
+        auth.signOut()
+        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
+        val intent = Intent(this, Login::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
+        finish()
     }
 }

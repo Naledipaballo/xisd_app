@@ -31,6 +31,10 @@
 
     <string name="continue_shopping">Continue Shopping</string>
 
+    <string name="default_web_client_id">658611379065-kj15q9hd4mades253s9jgvmnmsjllkgm.apps.googleusercontent.com</string>
+
+    <string name="logout_red"><font color="#D32F2F">Logout</font></string>
+
 
 
 </resources>

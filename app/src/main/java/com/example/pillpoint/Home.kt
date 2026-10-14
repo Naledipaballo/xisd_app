@@ -11,10 +11,11 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
 
 class Home : AppCompatActivity() {
 
-
+    private lateinit var auth: FirebaseAuth
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var btnMenu: ImageButton
     private lateinit var navView: NavigationView
@@ -29,15 +30,19 @@ class Home : AppCompatActivity() {
     private lateinit var ivProfile: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        //force the app to stay in light mode
+        // Force the app to stay in light mode
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
+
         if (!SessionManager.isLoggedIn(this)) {
             redirectToLogin()
             return
         }
 
         setContentView(R.layout.activity_home)
+
+        // Initialize Firebase Auth
+        auth = FirebaseAuth.getInstance()
 
         // Initialize UI components
         drawerLayout = findViewById(R.id.drawerLayout)
@@ -53,17 +58,22 @@ class Home : AppCompatActivity() {
         btnStore = findViewById(R.id.btnStoreLocator)
         tvWelcomeUser = findViewById(R.id.tvWelcomeUser)
 
-        //Setup profile icon click listener toopen  my account
-        ivProfile.setOnClickListener{
+        // Setup profile icon click listener to open My Account
+        ivProfile.setOnClickListener {
             val intent = Intent(this, MyAccount::class.java)
             startActivity(intent)
         }
 
-        // Grab user email passed from Login/Signup if available
-        val userEmail = SessionManager.email(this).ifEmpty { intent.getStringExtra("USER_EMAIL").orEmpty() }
+        // Grab current user email from Firebase or SessionManager
+        val currentUser = auth.currentUser
+        val userEmail = currentUser?.email ?: SessionManager.email(this).ifEmpty { intent.getStringExtra("USER_EMAIL").orEmpty() }
+
         if (userEmail.isNotEmpty()) {
             tvWelcomeUser.text = "Welcome back, $userEmail!"
         }
+
+        // Populate Navigation Drawer Header with User Info
+        setupDrawerHeader(userEmail)
 
         // Hamburger menu click opens the drawer from the left
         btnMenu.setOnClickListener {
@@ -98,11 +108,7 @@ class Home : AppCompatActivity() {
                     startActivity(Intent(this, TrackOrder::class.java))
                 }
                 R.id.nav_logout -> {
-                    SessionManager.logout(this)
-                    val intent = Intent(this, Login::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    }
-                    startActivity(intent)
+                    logoutUser()
                 }
             }
             drawerLayout.closeDrawer(GravityCompat.START)
@@ -135,6 +141,33 @@ class Home : AppCompatActivity() {
         }
     }
 
+    private fun setupDrawerHeader(userEmail: String) {
+        val headerView = navView.getHeaderView(0)
+        val txtEmail = headerView.findViewById<TextView>(R.id.txtEmail)
+        val txtUserName = headerView.findViewById<TextView>(R.id.txtUserName)
+
+        if (userEmail.isNotEmpty()) {
+            txtEmail.text = userEmail
+        } else {
+            txtEmail.text = "user@email.com"
+        }
+
+        val currentUser = auth.currentUser
+        val displayName = currentUser?.displayName
+        if (!displayName.isNullOrBlank()) {
+            val firstName = displayName.split(" ").firstOrNull() ?: ""
+            txtUserName.text = "Welcome, $firstName"
+        } else {
+            txtUserName.text = "Welcome"
+        }
+    }
+
+    private fun logoutUser() {
+        SessionManager.logout(this)
+        auth.signOut()
+        redirectToLogin()
+    }
+
     private fun redirectToLogin() {
         val intent = Intent(this, Login::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -142,6 +175,4 @@ class Home : AppCompatActivity() {
         startActivity(intent)
         finish()
     }
-
-
 }

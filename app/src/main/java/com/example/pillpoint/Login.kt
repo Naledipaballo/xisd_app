@@ -9,8 +9,15 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.SignInButton
+import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 
 class Login : AppCompatActivity() {
 
@@ -19,8 +26,25 @@ class Login : AppCompatActivity() {
     private lateinit var passwordInput: EditText
     private lateinit var loginButton: Button
     private lateinit var togglePassword: ImageButton
+    private lateinit var googleLoginButton: SignInButton
 
+    private lateinit var googleSignInClient: GoogleSignInClient
     private var passwordVisible = false
+
+    // Activity Result Launcher for Google Sign-In
+    private val googleSignInLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            if (account != null && account.idToken != null) {
+                firebaseAuthWithGoogle(account.idToken!!)
+            }
+        } catch (e: ApiException) {
+            Toast.makeText(this, "Google Sign-In failed: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +57,17 @@ class Login : AppCompatActivity() {
         passwordInput = findViewById(R.id.etPassword)
         loginButton = findViewById(R.id.btnLogin)
         togglePassword = findViewById(R.id.btnTogglePassword)
+
+        // Matches your activity_login.xml ID
+        googleLoginButton = findViewById(R.id.btnGoogleSignIn)
         val signupLink: TextView = findViewById(R.id.tvSignup)
+
+        // Configure Google Sign-In using the Web Client ID from strings.xml
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
 
         // Pre-fill email if coming directly from Signup screen
         val prefilledEmail = intent.getStringExtra("USER_EMAIL")
@@ -49,6 +83,11 @@ class Login : AppCompatActivity() {
 
         loginButton.setOnClickListener {
             loginUser()
+        }
+
+        // Google Login button click listener
+        googleLoginButton.setOnClickListener {
+            signInWithGoogle()
         }
 
         signupLink.setOnClickListener {
@@ -68,9 +107,36 @@ class Login : AppCompatActivity() {
             togglePassword.setImageResource(R.drawable.ic_visibility)
         }
 
-        // Preserve standard font typeface and cursor position
         passwordInput.typeface = Typeface.DEFAULT
         passwordInput.setSelection(cursorPosition.coerceAtMost(passwordInput.text.length))
+    }
+
+    private fun signInWithGoogle() {
+        // Sign out first to ensure the account chooser is prompted
+        googleSignInClient.signOut().addOnCompleteListener {
+            val signInIntent = googleSignInClient.signInIntent
+            googleSignInLauncher.launch(signInIntent)
+        }
+    }
+
+    private fun firebaseAuthWithGoogle(idToken: String) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(this, "Google Login successful!", Toast.LENGTH_SHORT).show()
+
+                    val userEmail = auth.currentUser?.email ?: ""
+                    SessionManager.login(this, userEmail)
+
+                    val intent = Intent(this, Home::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                } else {
+                    Toast.makeText(this, "Authentication Failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                }
+            }
     }
 
     private fun loginUser() {
@@ -90,10 +156,8 @@ class Login : AppCompatActivity() {
                 if (task.isSuccessful) {
                     Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
 
-                    // Save session state so Home passes the isLoggedIn check
                     SessionManager.login(this, email)
 
-                    // Navigate to Home dashboard and clear navigation stack
                     val intent = Intent(this, Home::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     startActivity(intent)

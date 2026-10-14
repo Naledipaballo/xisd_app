@@ -8,5 +8,5 @@
     <item android:id="@+id/nav_reminders" android:title="Medication Reminders" />
     <item android:id="@+id/nav_store" android:title="Store Locator" />
     <item android:id="@+id/nav_track" android:title="Track Order" />
-    <item android:id="@+id/nav_logout" android:title="Logout" />
+    <item android:id="@+id/nav_logout" android:title="@string/logout_red" />
 </menu>

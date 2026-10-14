@@ -16,7 +16,6 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!-- Feature Permissions -->
-    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -29,9 +28,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Pillpoint">
 
-        <!-- Login is now the App Launcher Entry Point -->
+        <!-- 1. MainActivity is now the Splash Screen & Launcher Entry Point -->
         <activity
-            android:name=".Login"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,10 +38,10 @@
             </intent-filter>
         </activity>
 
-        <!-- MainActivity is opened after successful login -->
+        <!-- 2. Login Activity -->
         <activity
-            android:name=".MainActivity"
-            android:exported="true" />
+            android:name=".Login"
+            android:exported="false" />
 
         <!-- Standard Activities -->
         <activity

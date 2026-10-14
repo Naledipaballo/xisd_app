@@ -17,9 +17,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
 
 class Prescriptions : AppCompatActivity() {
 
+    private lateinit var auth: FirebaseAuth
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var btnMenu: ImageButton
     private lateinit var navView: NavigationView
@@ -50,6 +52,9 @@ class Prescriptions : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_prescriptions)
 
+        // Initialize Firebase Auth
+        auth = FirebaseAuth.getInstance()
+
         // Initialize navigation drawer. The prescription layout includes these views.
         drawerLayout = findViewById(R.id.drawerLayout)
         btnMenu = findViewById(R.id.btnMenu)
@@ -67,8 +72,11 @@ class Prescriptions : AppCompatActivity() {
         btnSubmitPrescription = findViewById(R.id.btnSubmitPrescription)
         tvNoPrescriptions = findViewById(R.id.tvNoPrescriptions)
 
-        //setup profile icon
-        ivProfile.setOnClickListener{
+        // Setup Navigation Drawer Header with User Info
+        setupDrawerHeader()
+
+        // Setup profile icon click listener to open My Account
+        ivProfile.setOnClickListener {
             val intent = Intent(this, MyAccount::class.java)
             startActivity(intent)
         }
@@ -113,11 +121,7 @@ class Prescriptions : AppCompatActivity() {
                     startActivity(Intent(this, TrackOrder::class.java))
                 }
                 R.id.nav_logout -> {
-                    SessionManager.logout(this)
-                    val intent = Intent(this, Login::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(intent)
-                    finish()
+                    logoutUser()
                 }
             }
             drawerLayout.closeDrawer(GravityCompat.START)
@@ -146,6 +150,35 @@ class Prescriptions : AppCompatActivity() {
             tvNoPrescriptions.text = "$patient | $doctor | $method | $date | Pending | Uploaded"
             Toast.makeText(this, "Prescription uploaded successfully!", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun setupDrawerHeader() {
+        val headerView = navView.getHeaderView(0)
+        val txtEmail = headerView.findViewById<TextView>(R.id.txtEmail)
+        val txtUserName = headerView.findViewById<TextView>(R.id.txtUserName)
+
+        val currentUser = auth.currentUser
+        val userEmail = currentUser?.email ?: SessionManager.email(this).ifEmpty { intent.getStringExtra("USER_EMAIL").orEmpty() }
+
+        txtEmail.text = if (userEmail.isNotEmpty()) userEmail else "user@email.com"
+
+        val displayName = currentUser?.displayName
+        if (!displayName.isNullOrBlank()) {
+            val firstName = displayName.split(" ").firstOrNull() ?: ""
+            txtUserName.text = "Welcome, $firstName"
+        } else {
+            txtUserName.text = "Welcome"
+        }
+    }
+
+    private fun logoutUser() {
+        SessionManager.logout(this)
+        auth.signOut()
+        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
+        val intent = Intent(this, Login::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
+        finish()
     }
 
     // Helper method to retrieve uploaded file name from URI
