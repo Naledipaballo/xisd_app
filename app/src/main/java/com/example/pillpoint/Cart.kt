@@ -46,7 +46,7 @@ class Cart : AppCompatActivity() {
         btnCheckout = findViewById(R.id.btnCheckout)
     }
 
-    // Retrieve the signed-in user's cart from Firestore.
+    // Retrieve the signed-in user's cart from Firestore via CartRepository.
     private fun loadCart() {
         if (isLoading) return
         isLoading = true

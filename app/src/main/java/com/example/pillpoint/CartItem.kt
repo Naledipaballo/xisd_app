@@ -1,6 +1,7 @@
 package com.example.pillpoint
 
 import android.content.Context
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -24,7 +25,6 @@ object CartRepository {
     val items = mutableListOf<CartItem>()
 
     // Add a product to the signed-in user's Firestore cart.
-    // If the product already exists, increase its quantity.
     fun addItem(
         item: CartItem,
         onSuccess: () -> Unit = {},
@@ -49,11 +49,11 @@ object CartRepository {
 
             val cartData = hashMapOf<String, Any>(
                 "userId" to user.uid,
-                "productId" to item.id,
-                "name" to item.name,
-                "price" to item.price,
+                "medicationID" to item.id,
+                "medicationName" to item.name,
+                "unitPrice" to item.price,
                 "quantity" to newQuantity,
-                "updatedAt" to FieldValue.serverTimestamp()
+                "addedAt" to FieldValue.serverTimestamp()
             )
 
             transaction.set(cartDocument, cartData)
@@ -95,21 +95,31 @@ object CartRepository {
             return
         }
 
+        // Fetch collection and filter client-side to safely handle both 'userId' and 'userid' field casings
         db.collection("cart")
-            .whereEqualTo("userId", user.uid)
             .get()
             .addOnSuccessListener { documents ->
+                Log.d("CartDebug", "Total documents fetched from cart collection: ${documents.size()}")
 
                 val loadedItems = documents.documents.mapNotNull { document ->
-                    val productId =
-                        document.getString("productId")
-                            ?: document.getString("id")
-                            ?: return@mapNotNull null
+                    val docUserId = document.getString("userId") ?: document.getString("userid")
 
-                    val name = document.getString("name") ?: ""
-                    val price = document.getDouble("price") ?: 0.0
-                    val quantity =
-                        document.getLong("quantity")?.toInt() ?: 1
+                    if (docUserId != user.uid) return@mapNotNull null
+
+                    val productId = document.getString("medicationID")
+                        ?: document.getString("productId")
+                        ?: document.getString("id")
+                        ?: return@mapNotNull null
+
+                    val name = document.getString("medicationName")
+                        ?: document.getString("name")
+                        ?: ""
+
+                    val price = document.getDouble("unitPrice")
+                        ?: document.getDouble("price")
+                        ?: 0.0
+
+                    val quantity = document.getLong("quantity")?.toInt() ?: 1
 
                     CartItem(
                         id = productId,
@@ -120,12 +130,15 @@ object CartRepository {
                     )
                 }
 
+                Log.d("CartDebug", "Successfully filtered ${loadedItems.size} items for user ${user.uid}")
+
                 items.clear()
                 items.addAll(loadedItems)
 
                 onSuccess(items.toList())
             }
             .addOnFailureListener { exception ->
+                Log.e("CartDebug", "Failed to load cart items: ${exception.message}")
                 onError(
                     exception.message ?: "Failed to load cart items."
                 )
@@ -161,44 +174,38 @@ object CartRepository {
             }
     }
 
-    // Clear all cart items belonging to the current user.
+    // Clear all cart items belonging to the current user from Firestore and local list.
     fun clearCart(
         onSuccess: () -> Unit = {},
         onError: (String) -> Unit = {}
     ) {
         val user = auth.currentUser
-
         if (user == null) {
-            onError("Please log in to clear your cart.")
+            onError("User not logged in")
             return
         }
 
         db.collection("cart")
-            .whereEqualTo("userId", user.uid)
             .get()
             .addOnSuccessListener { documents ->
-
                 val batch = db.batch()
-
-                for (document in documents.documents) {
-                    batch.delete(document.reference)
+                for (doc in documents) {
+                    val docUserId = doc.getString("userId") ?: doc.getString("userid")
+                    if (docUserId == user.uid) {
+                        batch.delete(doc.reference)
+                    }
                 }
-
                 batch.commit()
                     .addOnSuccessListener {
                         items.clear()
                         onSuccess()
                     }
-                    .addOnFailureListener { exception ->
-                        onError(
-                            exception.message ?: "Could not clear your cart."
-                        )
+                    .addOnFailureListener { e ->
+                        onError(e.message ?: "Failed to clear cart items")
                     }
             }
-            .addOnFailureListener { exception ->
-                onError(
-                    exception.message ?: "Could not retrieve your cart."
-                )
+            .addOnFailureListener { e ->
+                onError(e.message ?: "Failed to query cart items")
             }
     }
 
@@ -208,8 +215,8 @@ object CartRepository {
         productId: String
     ): Int {
         val drawableName = when (productId) {
+            "med001", "allergex_tablets" -> "allergextablets"
             "allergex_syrup" -> "allergexsyrup"
-            "allergex_tablets" -> "allergextablets"
             "andolex_oral_gel" -> "andolexcoralgel"
             "band_aid_plastic" -> "bandaidplastic"
             "benelyn_syrup" -> "benelyinsyrup"

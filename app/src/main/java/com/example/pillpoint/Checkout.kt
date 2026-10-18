@@ -55,7 +55,6 @@ class Checkout : AppCompatActivity() {
     }
 
     private fun loadOrderData() {
-        // Use the current cart subtotal where possible.
         subtotalAmount = if (CartRepository.items.isNotEmpty()) {
             CartRepository.getSubtotal()
         } else {
@@ -145,7 +144,6 @@ class Checkout : AppCompatActivity() {
             return
         }
 
-        // Take a snapshot of the products being ordered.
         val cartSnapshot = CartRepository.items.toList()
 
         if (cartSnapshot.isEmpty()) {
@@ -157,7 +155,6 @@ class Checkout : AppCompatActivity() {
             return
         }
 
-        // Identify the selected payment method.
         val paymentMethod = when (rgPaymentMethod.checkedRadioButtonId) {
             R.id.rbCard -> "Credit/Debit Card"
             R.id.rbCod -> "Cash on Delivery"
@@ -171,7 +168,6 @@ class Checkout : AppCompatActivity() {
             }
         }
 
-        // Prepare the products for the Firestore order document.
         val orderItems = cartSnapshot.map { item ->
             hashMapOf<String, Any>(
                 "productId" to item.id,
@@ -209,14 +205,11 @@ class Checkout : AppCompatActivity() {
         btnPlaceOrder.isEnabled = false
         btnPlaceOrder.text = "Placing Order..."
 
-        // Create a new order document in Firestore.
         db.collection("orders")
             .add(orderData)
             .addOnSuccessListener { orderDocument ->
-
                 val orderId = orderDocument.id
 
-                // Clear the cart only after the order was saved.
                 CartRepository.clearCart(
                     onSuccess = {
                         Toast.makeText(
@@ -224,17 +217,11 @@ class Checkout : AppCompatActivity() {
                             "Order placed successfully! Order ID: $orderId",
                             Toast.LENGTH_LONG
                         ).show()
-
                         finish()
                     },
                     onError = { message ->
-                        // The order exists, even if clearing the cart fails.
-                        Toast.makeText(
-                            this,
-                            "Order $orderId was saved, but the cart could not be cleared. $message",
-                            Toast.LENGTH_LONG
-                        ).show()
-
+                        val errorText = "Order $orderId was saved, but the cart could not be cleared. $message"
+                        Toast.makeText(this@Checkout, errorText, Toast.LENGTH_LONG).show()
                         finish()
                     }
                 )
@@ -246,9 +233,7 @@ class Checkout : AppCompatActivity() {
 
                 Toast.makeText(
                     this,
-                    "Could not save your order: ${
-                        exception.message ?: "Please try again."
-                    }",
+                    "Could not save your order: ${exception.message ?: "Please try again."}",
                     Toast.LENGTH_LONG
                 ).show()
             }

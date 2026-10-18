@@ -9,9 +9,13 @@
     android:background="#DFEEF3"
     tools:context=".Reminder">
 
+    <!-- Main reminder screen -->
     <ScrollView
+        android:id="@+id/reminderScrollView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -19,20 +23,20 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Top Header Bar -->
+            <!-- Top header bar -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:layout_marginBottom="16dp">
+                android:orientation="horizontal">
 
                 <ImageButton
                     android:id="@+id/btnMenu"
                     android:layout_width="45dp"
                     android:layout_height="45dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Menu"
+                    android:contentDescription="Open navigation menu"
                     android:src="@drawable/ic_menu" />
 
                 <TextView
@@ -49,207 +53,257 @@
                     android:id="@+id/ivProfile"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:contentDescription="Profile"
-                    android:src="@drawable/photo" />
+                    android:contentDescription="My account"
+                    android:src="@drawable/photo"
+                    android:scaleType="centerCrop" />
+
             </LinearLayout>
 
-            <!-- Form Card Container -->
+            <!-- Reminder form card -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
                 android:background="@drawable/edit_text_background"
                 android:orientation="vertical"
-                android:padding="16dp"
-                android:layout_marginBottom="24dp">
+                android:padding="16dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
                     android:text="Set Medication Reminder"
                     android:textColor="@color/dark_blue"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="12dp" />
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
-                <!-- Medication Name -->
+                <!-- Medication name -->
                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
                     android:text="Medication Name *"
                     android:textColor="@color/dark_blue"
                     android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"/>
+                    android:textStyle="bold" />
+
                 <EditText
                     android:id="@+id/etMedicationName"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="10dp"
                     android:background="@drawable/edit_text_background"
                     android:hint="e.g. Paracetamol"
-                    android:padding="8dp"
-                    android:textSize="12sp"
-                    android:layout_marginBottom="10dp"
-                    android:inputType="text"/>
+                    android:inputType="textCapWords"
+                    android:padding="10dp"
+                    android:textSize="14sp" />
 
                 <!-- Dosage -->
                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
                     android:text="Dosage *"
                     android:textColor="@color/dark_blue"
                     android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"/>
+                    android:textStyle="bold" />
+
                 <EditText
                     android:id="@+id/etDosage"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:background="@drawable/edit_text_background"
-                    android:hint="e.g. 1 Pill / 5ml"
-                    android:padding="8dp"
-                    android:textSize="12sp"
+                    android:layout_height="48dp"
                     android:layout_marginBottom="10dp"
-                    android:inputType="text"/>
+                    android:background="@drawable/edit_text_background"
+                    android:hint="e.g. 1 tablet or 5 ml"
+                    android:inputType="text"
+                    android:padding="10dp"
+                    android:textSize="14sp" />
 
-                <!-- Reminder Time & Date Row -->
+                <!-- Reminder date and time -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
                     android:orientation="horizontal"
-                    android:weightSum="2"
-                    android:layout_marginBottom="10dp">
+                    android:weightSum="2">
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
                         android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginEnd="6dp">
+                        android:orientation="vertical">
+
                         <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="4dp"
                             android:text="Reminder Time *"
                             android:textColor="@color/dark_blue"
                             android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="4dp"/>
+                            android:textStyle="bold" />
+
                         <EditText
                             android:id="@+id/etReminderTime"
                             android:layout_width="match_parent"
-                            android:layout_height="40dp"
+                            android:layout_height="48dp"
                             android:background="@drawable/edit_text_background"
-                            android:hint="--:--"
-                            android:padding="8dp"
-                            android:textSize="12sp"
-                            android:inputType="time"/>
+                            android:hint="HH:mm"
+                            android:inputType="time"
+                            android:padding="10dp"
+                            android:textSize="14sp" />
+
                     </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
                         android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="6dp">
+                        android:orientation="vertical">
+
                         <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="4dp"
                             android:text="Reminder Date *"
                             android:textColor="@color/dark_blue"
                             android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="4dp"/>
+                            android:textStyle="bold" />
+
                         <EditText
                             android:id="@+id/etReminderDate"
                             android:layout_width="match_parent"
-                            android:layout_height="40dp"
+                            android:layout_height="48dp"
                             android:background="@drawable/edit_text_background"
-                            android:hint="dd/mm/yyyy"
-                            android:padding="8dp"
-                            android:textSize="12sp"
-                            android:inputType="date"/>
+                            android:hint="dd/MM/yyyy"
+                            android:inputType="date"
+                            android:padding="10dp"
+                            android:textSize="14sp" />
+
                     </LinearLayout>
+
                 </LinearLayout>
 
-                <!-- Repeat Frequency -->
+                <!-- Repeat frequency -->
                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
                     android:text="Repeat Frequency"
                     android:textColor="@color/dark_blue"
                     android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"/>
+                    android:textStyle="bold" />
+
                 <Spinner
                     android:id="@+id/spinnerRepeatFrequency"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:background="@drawable/edit_text_background"
-                    android:layout_marginBottom="10dp"/>
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/edit_text_background" />
 
-                <!-- Notification Type -->
+                <!-- Notification type -->
                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
                     android:text="Notification Type"
                     android:textColor="@color/dark_blue"
                     android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"/>
+                    android:textStyle="bold" />
+
                 <Spinner
                     android:id="@+id/spinnerNotificationType"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:background="@drawable/edit_text_background"
-                    android:layout_marginBottom="10dp"/>
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/edit_text_background" />
 
-                <!-- Notes -->
+                <!-- Additional notes -->
                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
                     android:text="Notes"
                     android:textColor="@color/dark_blue"
                     android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"/>
+                    android:textStyle="bold" />
+
                 <EditText
                     android:id="@+id/etNotes"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="80dp"
+                    android:layout_marginBottom="16dp"
                     android:background="@drawable/edit_text_background"
-                    android:hint="Additional instructions..."
-                    android:padding="8dp"
-                    android:textSize="12sp"
-                    android:gravity="top"
-                    android:layout_marginBottom="16dp"/>
+                    android:gravity="top|start"
+                    android:hint="Additional instructions (optional)"
+                    android:inputType="textCapSentences|textMultiLine"
+                    android:padding="10dp"
+                    android:textSize="14sp" />
 
-                <!-- Save Reminder Button -->
+                <!-- Save reminder -->
                 <Button
                     android:id="@+id/btnSaveReminder"
                     android:layout_width="match_parent"
-                    android:layout_height="45dp"
+                    android:layout_height="50dp"
+                    android:layout_marginBottom="12dp"
                     android:backgroundTint="@color/dark_blue"
                     android:text="Save Reminder"
                     android:textAllCaps="false"
                     android:textColor="@android:color/white"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="12dp"/>
+                    android:textStyle="bold" />
 
-                <!-- View Scheduled Reminders Link -->
+                <!-- View saved reminders -->
                 <TextView
                     android:id="@+id/tvViewScheduled"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="8dp"
                     android:text="View Scheduled Reminders"
                     android:textColor="@color/dark_blue"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:layout_gravity="center_horizontal"/>
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <!-- Scheduled reminders heading -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:text="Your Scheduled Reminders"
+                    android:textColor="@color/dark_blue"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <!-- Empty state and loading errors -->
+                <TextView
+                    android:id="@+id/tvNoReminders"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:text="You have no scheduled medication reminders."
+                    android:textColor="@color/dark_blue"
+                    android:textSize="13sp"
+                    android:visibility="visible" />
+
+                <!-- Kotlin adds saved reminder cards here -->
+                <LinearLayout
+                    android:id="@+id/remindersContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
 
             </LinearLayout>
 
         </LinearLayout>
+
     </ScrollView>
 
+    <!-- Existing navigation drawer -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navView"
         android:layout_width="300dp"
