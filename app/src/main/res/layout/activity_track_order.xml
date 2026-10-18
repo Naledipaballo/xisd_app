@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#DFEEF3">
+    android:background="#DFEEF3"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,185 +11,221 @@
         android:orientation="vertical"
         android:padding="20dp">
 
+        <!-- Back button -->
         <Button
             android:id="@+id/btnBackTrack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#003049"
             android:text="← Back"
-            android:textAllCaps="false"
-            android:backgroundTint="@color/dark_blue"
-            android:textColor="@android:color/white"
-            android:onClick="onBackPressed" />
+            android:textColor="#FFFFFF" />
 
-        <!-- Header -->
+        <!-- Page heading -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:text="Track Order"
             android:textColor="#003049"
             android:textSize="28sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginBottom="8dp" />
+            android:textStyle="bold" />
+
+    <!-- Form Card Container -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edit_text_background"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_marginBottom="24dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Track your medication delivery"
-            android:textColor="#666666"
-            android:textSize="16sp"
-            android:gravity="center"
-            android:layout_marginBottom="25dp" />
+            android:layout_marginBottom="20dp"
+            android:text="Enter your order ID to view your order status and delivery details."
+            android:textColor="#444444"
+            android:textSize="15sp" />
 
-        <!-- Order Number -->
+        <!-- Order ID input -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Order Number"
+            android:layout_marginBottom="6dp"
+            android:text="Order ID"
             android:textColor="#003049"
-            android:textStyle="bold"
             android:textSize="16sp"
-            android:layout_marginBottom="8dp" />
+            android:textStyle="bold" />
 
         <EditText
             android:id="@+id/orderNumber"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:hint="Enter order number"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#003049"
+            android:hint="Enter your Firestore order ID"
             android:inputType="text"
-            android:padding="15dp"
-            android:background="@android:drawable/editbox_background"
-            android:layout_marginBottom="15dp" />
+            android:minHeight="52dp"
+            android:padding="12dp"
+            android:singleLine="true"
+            android:textColor="#003049"
+            android:textColorHint="#777777" />
 
-        <!-- Track Button -->
+        <!-- Track button -->
         <Button
             android:id="@+id/trackOrderButton"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:backgroundTint="@color/dark_blue"
             android:text="Track Order"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:backgroundTint="@color/dark_blue"
-            android:layout_marginBottom="25dp" />
+            android:textSize="16sp" />
 
-        <!-- Order Details -->
+        <!-- Order details -->
         <LinearLayout
             android:id="@+id/orderDetailsLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:padding="16dp"
             android:background="#FFFFFF"
-            android:padding="20dp">
+            android:elevation="3dp"
+            android:visibility="gone">
 
+            <!-- Status heading -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
                 android:text="Order Details"
                 android:textColor="#003049"
                 android:textSize="22sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="20dp" />
+                android:textStyle="bold" />
 
-            <!-- Status -->
+            <!-- Current status -->
             <TextView
                 android:id="@+id/orderStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Order Status"
+                android:layout_marginBottom="12dp"
+                android:padding="12dp"
+                android:background="#DFEEF3"
+                android:text="Status: Pending"
                 android:textColor="#003049"
                 android:textSize="17sp"
-                android:textStyle="bold"
-                android:padding="12dp"
-                android:background="#E8F5E9"
-                android:layout_marginBottom="12dp" />
+                android:textStyle="bold" />
 
-            <!-- Order Date -->
+            <!-- Order date -->
             <TextView
                 android:id="@+id/orderDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Order Date"
+                android:layout_marginBottom="10dp"
+                android:text="Order Date:"
                 android:textColor="#444444"
-                android:textSize="16sp"
-                android:padding="8dp"
-                android:layout_marginBottom="8dp" />
+                android:textSize="15sp" />
 
-            <!-- Address -->
+            <!-- Delivery address -->
             <TextView
                 android:id="@+id/deliveryAddress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Delivery Address"
+                android:layout_marginBottom="10dp"
+                android:text="Delivery Address:"
                 android:textColor="#444444"
-                android:textSize="16sp"
-                android:padding="8dp"
-                android:layout_marginBottom="8dp" />
+                android:textSize="15sp" />
 
-            <!-- Estimated Delivery -->
+            <!-- Estimated delivery -->
             <TextView
                 android:id="@+id/estimatedDelivery"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Estimated Delivery"
+                android:layout_marginBottom="16dp"
+                android:text="Estimated Delivery: To be confirmed"
                 android:textColor="#444444"
-                android:textSize="16sp"
-                android:padding="8dp"
-                android:layout_marginBottom="20dp" />
+                android:textSize="15sp" />
 
-            <!-- Tracking Progress -->
-
+            <!-- Delivery progress heading -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
                 android:text="Delivery Progress"
                 android:textColor="#003049"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="15dp" />
+                android:textSize="19sp"
+                android:textStyle="bold" />
+
+            <!-- These labels are updated by TrackOrder.kt -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:padding="10dp"
+                android:text="○ Order Placed"
+                android:textColor="#444444"
+                android:textSize="15sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="✓  Order Placed"
+                android:layout_marginBottom="8dp"
+                android:padding="10dp"
+                android:text="○ Order Confirmed"
+                android:textColor="#444444"
+                android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:padding="10dp"
+                android:text="○ Pharmacy Preparing Order"
+                android:textColor="#444444"
+                android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:padding="10dp"
+                android:text="○ Out for Delivery"
+                android:textColor="#444444"
+                android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:padding="10dp"
+                android:text="○ Delivered"
+                android:textColor="#444444"
+                android:textSize="15sp" />
+
+            <!-- Ordered products and totals -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Products and Payment"
                 android:textColor="#003049"
-                android:textSize="16sp"
-                android:padding="8dp" />
+                android:textSize="19sp"
+                android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/orderItems"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="✓  Order Confirmed"
-                android:textColor="#003049"
-                android:textSize="16sp"
-                android:padding="8dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="✓  Pharmacy Preparing Order"
-                android:textColor="#003049"
-                android:textSize="16sp"
-                android:padding="8dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="✓  Out for Delivery"
-                android:textColor="@color/dark_blue"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:padding="8dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="○  Delivered"
-                android:textColor="#999999"
-                android:textSize="16sp"
-                android:padding="8dp" />
+                android:background="#F3F7F9"
+                android:padding="12dp"
+                android:text="Your ordered products will appear here."
+                android:textColor="#444444"
+                android:textSize="15sp" />
 
         </LinearLayout>
+
+    </LinearLayout>
 
     </LinearLayout>
 

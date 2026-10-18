@@ -75,6 +75,9 @@
             android:name=".Store_Locator"
             android:exported="false" />
 
+        <activity android:name=".MyOrders"
+            android:exported="false"/>
+
         <!-- Broadcast Receivers -->
         <receiver
             android:name=".ReminderReceiver"

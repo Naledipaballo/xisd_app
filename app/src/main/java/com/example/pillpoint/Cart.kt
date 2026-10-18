@@ -2,6 +2,7 @@ package com.example.pillpoint
 
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.Button
@@ -21,19 +22,19 @@ class Cart : AppCompatActivity() {
     private lateinit var btnCheckout: Button
 
     private val deliveryFee = 50.00
+    private var isLoading = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_cart)
 
         initViews()
-        renderCart()
         setupListeners()
     }
 
     override fun onResume() {
         super.onResume()
-        renderCart()
+        loadCart()
     }
 
     private fun initViews() {
@@ -45,33 +46,63 @@ class Cart : AppCompatActivity() {
         btnCheckout = findViewById(R.id.btnCheckout)
     }
 
-    private fun renderCart() {
+    // Retrieve the signed-in user's cart from Firestore.
+    private fun loadCart() {
+        if (isLoading) return
+        isLoading = true
+        btnCheckout.isEnabled = false
+
+        CartRepository.loadItems(
+            context = this,
+            onSuccess = { loadedItems ->
+                isLoading = false
+                btnCheckout.isEnabled = true
+                renderCart(loadedItems)
+            },
+            onError = { message ->
+                isLoading = false
+                btnCheckout.isEnabled = true
+
+                Toast.makeText(
+                    this,
+                    message,
+                    Toast.LENGTH_LONG
+                ).show()
+
+                renderCart(CartRepository.items.toList())
+            }
+        )
+    }
+
+    private fun renderCart(items: List<CartItem>) {
         cartItemsContainer.removeAllViews()
 
-        if (CartRepository.items.isEmpty()) {
+        if (items.isEmpty()) {
             val emptyTextView = TextView(this).apply {
                 text = "Your cart is empty"
                 textSize = 18f
                 gravity = Gravity.CENTER
                 setPadding(0, 40, 0, 40)
             }
+
             cartItemsContainer.addView(emptyTextView)
         } else {
-            for (item in CartRepository.items) {
+            items.forEach { item ->
                 cartItemsContainer.addView(createItemView(item))
             }
         }
 
         updateSummary()
+        btnCheckout.isEnabled = items.isNotEmpty() && !isLoading
     }
 
     private fun createItemView(item: CartItem): LinearLayout {
-        val context = this
-
-        val itemLayout = LinearLayout(context).apply {
+        val itemLayout = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
             setPadding(20, 20, 20, 20)
             setBackgroundColor(Color.WHITE)
+
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -80,47 +111,89 @@ class Cart : AppCompatActivity() {
             }
         }
 
-        val imageView = ImageView(context).apply {
+        val imageView = ImageView(this).apply {
             layoutParams = LinearLayout.LayoutParams(180, 180)
-            setImageResource(item.imageResId)
+
+            if (item.imageResId != 0) {
+                setImageResource(item.imageResId)
+            } else {
+                setImageDrawable(null)
+            }
+
+            contentDescription = item.name
+            scaleType = ImageView.ScaleType.FIT_CENTER
         }
 
-        val infoLayout = LinearLayout(context).apply {
+        val infoLayout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
+
             layoutParams = LinearLayout.LayoutParams(
                 0,
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 1f
             ).apply {
-                setPadding(24, 0, 0, 0)
+                setMargins(16, 0, 12, 0)
             }
         }
 
-        val nameText = TextView(context).apply {
+        val nameText = TextView(this).apply {
             text = item.name
-            textSize = 18f
-            setTypeface(null, android.graphics.Typeface.BOLD)
+            textSize = 16f
+            setTypeface(null, Typeface.BOLD)
         }
 
-        val priceText = TextView(context).apply {
+        val priceText = TextView(this).apply {
             text = String.format("Price: R%.2f", item.price)
+            textSize = 14f
         }
 
-        val qtyText = TextView(context).apply {
+        val qtyText = TextView(this).apply {
             text = "Quantity: ${item.quantity}"
+            textSize = 14f
+        }
+
+        val lineTotalText = TextView(this).apply {
+            text = String.format(
+                "Item total: R%.2f",
+                item.price * item.quantity
+            )
+            textSize = 14f
         }
 
         infoLayout.addView(nameText)
         infoLayout.addView(priceText)
         infoLayout.addView(qtyText)
+        infoLayout.addView(lineTotalText)
 
-        val btnRemove = Button(context).apply {
+        val btnRemove = Button(this).apply {
             text = "Remove"
             setBackgroundColor(Color.parseColor("#0A2540"))
             setTextColor(Color.WHITE)
+
             setOnClickListener {
-                CartRepository.removeItem(item)
-                renderCart()
+                isEnabled = false
+
+                CartRepository.removeItem(
+                    item = item,
+                    onSuccess = {
+                        Toast.makeText(
+                            this@Cart,
+                            "${item.name} removed",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        loadCart()
+                    },
+                    onError = { message ->
+                        isEnabled = true
+
+                        Toast.makeText(
+                            this@Cart,
+                            message,
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                )
             }
         }
 
@@ -133,11 +206,23 @@ class Cart : AppCompatActivity() {
 
     private fun updateSummary() {
         val subtotal = CartRepository.getSubtotal()
-        val total = if (subtotal > 0) subtotal + deliveryFee else 0.0
+        val fee = if (subtotal > 0.0) deliveryFee else 0.0
+        val total = subtotal + fee
 
-        txtSubtotal.text = String.format("Subtotal: R%.2f", subtotal)
-        txtDelivery.text = String.format("Delivery Fee: R%.2f", if (subtotal > 0) deliveryFee else 0.0)
-        txtTotal.text = String.format("Total: R%.2f", total)
+        txtSubtotal.text = String.format(
+            "Subtotal: R%.2f",
+            subtotal
+        )
+
+        txtDelivery.text = String.format(
+            "Delivery Fee: R%.2f",
+            fee
+        )
+
+        txtTotal.text = String.format(
+            "Total: R%.2f",
+            total
+        )
     }
 
     private fun setupListeners() {
@@ -146,13 +231,31 @@ class Cart : AppCompatActivity() {
         }
 
         btnCheckout.setOnClickListener {
-            if (CartRepository.items.isEmpty()) {
-                Toast.makeText(this, "Your cart is empty", Toast.LENGTH_SHORT).show()
+            if (isLoading) {
+                Toast.makeText(
+                    this,
+                    "Please wait while your cart loads.",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
-            val intent = Intent(this, Checkout::class.java).apply {
-                putExtra("EXTRA_SUBTOTAL", CartRepository.getSubtotal())
+
+            if (CartRepository.items.isEmpty()) {
+                Toast.makeText(
+                    this,
+                    "Your cart is empty",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
             }
+
+            val intent = Intent(this, Checkout::class.java).apply {
+                putExtra(
+                    "EXTRA_SUBTOTAL",
+                    CartRepository.getSubtotal()
+                )
+            }
+
             startActivity(intent)
         }
     }
