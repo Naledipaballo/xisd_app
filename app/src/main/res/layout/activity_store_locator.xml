@@ -16,7 +16,7 @@
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:layout_weight="1"
-            android:background="@drawable/edit_text_background"
+            android:background="@android:color/white"
             android:hint="Search area or city"
             android:inputType="text"
             android:padding="12dp" />
@@ -27,7 +27,8 @@
             android:layout_height="50dp"
             android:layout_marginStart="8dp"
             android:text="Search"
-            android:backgroundTint="@color/dark_blue"
+            android:backgroundTint="#0E2F56"
+            android:textColor="@android:color/white"
             android:textAllCaps="false" />
     </LinearLayout>
 
@@ -37,12 +38,13 @@
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
         android:paddingBottom="8dp"
-        android:text="Nearby pharmacies"
-        android:textColor="@color/dark_blue"
+        android:text="Nearby pharmacies (Leaflet Map)"
+        android:textColor="#0E2F56"
         android:textStyle="bold" />
 
-    <org.osmdroid.views.MapView
-        android:id="@+id/map"
+    <!-- WebView to render Leaflet.js -->
+    <WebView
+        android:id="@+id/mapWebView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />

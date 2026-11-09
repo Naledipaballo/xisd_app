@@ -1,5 +1,6 @@
 package com.example.pillpoint
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -8,6 +9,7 @@ import android.widget.LinearLayout
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -32,11 +34,25 @@ class Checkout : AppCompatActivity() {
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
 
-    private val deliveryFeeAmount = 35.00 // Updated to match layout fee (R35.00)
+    private val deliveryFeeAmount = 35.00 // Updated delivery fee
 
     private var subtotalAmount = 0.0
     private var totalAmount = 0.0
     private var isPlacingOrder = false
+
+    // Result launcher to handle returning selected pharmacy from Store_Locator
+    private val storeLocatorLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val pharmacyName = result.data?.getStringExtra("SELECTED_PHARMACY_NAME") ?: ""
+            val pharmacyAddress = result.data?.getStringExtra("SELECTED_PHARMACY_ADDRESS") ?: ""
+
+            // Auto-populate delivery address with the selected pharmacy
+            val combinedAddress = if (pharmacyAddress.isNotBlank()) "$pharmacyName, $pharmacyAddress" else pharmacyName
+            etDeliveryAddress.setText(combinedAddress)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,7 +100,7 @@ class Checkout : AppCompatActivity() {
         tvDeliveryFee.text = String.format("R%.2f", fee)
         tvTotalAmount.text = String.format("R%.2f", totalAmount)
 
-        // Update the custom button text matching your new UI design format
+        // Dynamically update button text with grand total
         btnPlaceOrder.text = String.format("Confirm & Place Order (R%.2f)", totalAmount)
     }
 
@@ -93,7 +109,7 @@ class Checkout : AppCompatActivity() {
             finish()
         }
 
-        // Toggle card details visibility based on the selected payment option
+        // Toggle visibility of card inputs based on payment option selection
         rgPaymentMethod.setOnCheckedChangeListener { _, checkedId ->
             if (checkedId == R.id.rbCard) {
                 layoutCardDetails.visibility = View.VISIBLE
@@ -103,8 +119,8 @@ class Checkout : AppCompatActivity() {
         }
 
         tvStoreLocator.setOnClickListener {
-            // TODO: Implement Store Locator Intent or Fragment navigation here
-            Toast.makeText(this, "Store Locator clicked", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, Store_Locator::class.java)
+            storeLocatorLauncher.launch(intent)
         }
 
         btnPlaceOrder.setOnClickListener {
@@ -147,7 +163,7 @@ class Checkout : AppCompatActivity() {
             return false
         }
 
-        // Additional validation if Credit/Debit Card is selected
+        // Card validation if Credit/Debit card is chosen
         if (checkedPaymentId == R.id.rbCard) {
             val cardNumber = etCardNumber.text.toString().trim()
             val expiry = etExpiry.text.toString().trim()
@@ -280,7 +296,7 @@ class Checkout : AppCompatActivity() {
             .addOnFailureListener { exception ->
                 isPlacingOrder = false
                 btnPlaceOrder.isEnabled = true
-                calculateTotals() // Re-apply grand total text to button
+                calculateTotals() // Reset button text
 
                 Toast.makeText(
                     this,
