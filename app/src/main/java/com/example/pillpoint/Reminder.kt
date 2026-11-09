@@ -2,7 +2,9 @@ package com.example.pillpoint
 
 import android.Manifest
 import android.app.AlarmManager
+import android.app.DatePickerDialog
 import android.app.PendingIntent
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -28,6 +30,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 
 class Reminder : AppCompatActivity() {
@@ -90,6 +93,7 @@ class Reminder : AppCompatActivity() {
         setupSpinners()
         setupDrawerHeader()
         setupNavigationDrawer()
+        setupDateTimePickers() // Sets up click listeners for date/time popups
 
         // Create the Android notification channel.
         ReminderReceiver.createNotificationChannel(this)
@@ -174,6 +178,44 @@ class Reminder : AppCompatActivity() {
         }
 
         spinnerNotificationType.adapter = notificationAdapter
+    }
+
+    // Configures EditText fields to open pickers instead of typing
+    private fun setupDateTimePickers() {
+        etReminderTime.isFocusable = false
+        etReminderTime.isClickable = true
+        etReminderTime.setOnClickListener {
+            showTimePicker()
+        }
+
+        etReminderDate.isFocusable = false
+        etReminderDate.isClickable = true
+        etReminderDate.setOnClickListener {
+            showDatePicker()
+        }
+    }
+
+    private fun showTimePicker() {
+        val calendar = Calendar.getInstance()
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val minute = calendar.get(Calendar.MINUTE)
+
+        TimePickerDialog(this, { _, selectedHour, selectedMinute ->
+            val formattedTime = String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute)
+            etReminderTime.setText(formattedTime)
+        }, hour, minute, true).show()
+    }
+
+    private fun showDatePicker() {
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
+            val formattedDate = String.format(Locale.getDefault(), "%02d/%02d/%d", selectedDay, selectedMonth + 1, selectedYear)
+            etReminderDate.setText(formattedDate)
+        }, year, month, day).show()
     }
 
     private fun requestNotificationPermission() {

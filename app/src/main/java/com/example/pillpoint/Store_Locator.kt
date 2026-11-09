@@ -5,12 +5,9 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Address
-import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
-
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -24,13 +21,13 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
-import java.util.Locale
 
 class Store_Locator : AppCompatActivity() {
 
@@ -40,7 +37,7 @@ class Store_Locator : AppCompatActivity() {
 
     private val locationPermissionRequest = 1001
     private var currentLat = -26.2041
-    private var currentLon = 28.0473 // Johannesburg fallback
+    private var currentLon = 28.0473 // Fallback coordinates
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,11 +68,10 @@ class Store_Locator : AppCompatActivity() {
         mapWebView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                loadMapAtLocation(currentLat, currentLon, "Initial Location")
+                loadMapWithPharmacies(currentLat, currentLon, "Your Location")
             }
         }
 
-        // Load Leaflet CSS and JS via CDN directly in the WebView HTML
         val leafletHtml = """
             <!DOCTYPE html>
             <html>
@@ -92,9 +88,10 @@ class Store_Locator : AppCompatActivity() {
                 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
                 <script>
                     var map = L.map('map').setView([-26.2041, 28.0473], 13);
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                    
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         maxZoom: 19,
-                        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+                        attribution: '&copy; OpenStreetMap contributors'
                     }).addTo(map);
 
                     var markersLayer = L.layerGroup().addTo(map);
@@ -103,16 +100,22 @@ class Store_Locator : AppCompatActivity() {
                         map.setView([lat, lon], 14);
                         markersLayer.clearLayers();
 
-                        // Add Center Marker
+                        // Add Center Location Marker
                         L.marker([lat, lon]).addTo(markersLayer)
-                            .bindPopup("<b>" + label + "</b>");
+                            .bindPopup("<b>" + label + "</b>").openPopup();
 
-                        // Add Pharmacy Markers
-                        var pharmacies = JSON.parse(pharmaciesJson);
-                        pharmacies.forEach(function(p) {
-                            var marker = L.marker([p.lat, p.lon]).addTo(markersLayer);
-                            marker.bindPopup("<b>" + p.name + "</b><br>" + p.address + "<br><br><button onclick=\"selectPharmacy('" + p.name.replace(/'/g, "\\'") + "', '" + p.address.replace(/'/g, "\\'") + "')\" style='background:#0E2F56;color:white;padding:5px 10px;border:none;border-radius:4px;'>Select Store</button>");
-                        });
+                        // Render Pharmacy Markers
+                        try {
+                            var pharmacies = JSON.parse(pharmaciesJson);
+                            pharmacies.forEach(function(p) {
+                                var marker = L.marker([p.lat, p.lon]).addTo(markersLayer);
+                                var popupContent = "<b>" + p.name + "</b><br>" + p.address + 
+                                    "<br><br><button onclick=\"selectPharmacy('" + p.name.replace(/'/g, "\\'") + "', '" + p.address.replace(/'/g, "\\'") + "')\" style='background:#0E2F56;color:white;padding:6px 12px;border:none;border-radius:4px;font-weight:bold;'>Select Store</button>";
+                                marker.bindPopup(popupContent);
+                            });
+                        } catch(e) {
+                            console.error(e);
+                        }
                     }
 
                     function selectPharmacy(name, address) {
@@ -147,7 +150,7 @@ class Store_Locator : AppCompatActivity() {
             if (location != null) {
                 currentLat = location.latitude
                 currentLon = location.longitude
-                loadMapAtLocation(currentLat, currentLon, "Your Location")
+                loadMapWithPharmacies(currentLat, currentLon, "Your Location")
             }
         } catch (_: SecurityException) { }
     }
@@ -159,13 +162,13 @@ class Store_Locator : AppCompatActivity() {
         }
     }
 
-    private fun loadMapAtLocation(lat: Double, lon: Double, label: String) {
+    private fun loadMapWithPharmacies(lat: Double, lon: Double, label: String) {
         lifecycleScope.launch {
             val pharmacies = withContext(Dispatchers.IO) {
-                queryNearbyPharmacies(lat, lon)
+                fetchPharmaciesFromOverpass(lat, lon)
             }
 
-            val jsonArray = org.json.JSONArray()
+            val jsonArray = JSONArray()
             pharmacies.forEach { p ->
                 val obj = JSONObject().apply {
                     put("name", p.name)
@@ -177,7 +180,8 @@ class Store_Locator : AppCompatActivity() {
             }
 
             val escapedLabel = label.replace("'", "\\'")
-            val script = "updateMap($lat, $lon, '$escapedLabel', '${jsonArray.toString().replace("'", "\\'")}');"
+            val jsonString = jsonArray.toString().replace("'", "\\'")
+            val script = "updateMap($lat, $lon, '$escapedLabel', '$jsonString');"
 
             withContext(Dispatchers.Main) {
                 mapWebView.evaluateJavascript(script, null)
@@ -185,70 +189,115 @@ class Store_Locator : AppCompatActivity() {
         }
     }
 
-    private fun searchLocation(locationName: String) {
-        lifecycleScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                try {
-                    val geocoder = Geocoder(this@Store_Locator, Locale.getDefault())
-                    @Suppress("DEPRECATION")
-                    val addresses: List<Address>? = geocoder.getFromLocationName(locationName, 1)
-                    addresses?.firstOrNull()
-                } catch (_: Exception) { null }
-            }
-            if (result == null) {
-                Toast.makeText(this@Store_Locator, "Location not found", Toast.LENGTH_SHORT).show()
-            } else {
-                currentLat = result.latitude
-                currentLon = result.longitude
-                loadMapAtLocation(currentLat, currentLon, locationName)
-            }
-        }
-    }
-
-    private fun queryNearbyPharmacies(latitude: Double, longitude: Double): List<Pharmacy> {
+    private fun fetchPharmaciesFromOverpass(lat: Double, lon: Double): List<Pharmacy> {
         val query = """
             [out:json][timeout:25];
-            (node[amenity=pharmacy](around:50000,$latitude,$longitude);way[amenity=pharmacy](around:50000,$latitude,$longitude);relation[amenity=pharmacy](around:50000,$latitude,$longitude););out center tags;
+            (
+              node["amenity"="pharmacy"](around:50000,$lat,$lon);
+              way["amenity"="pharmacy"](around:50000,$lat,$lon);
+              node["shop"="chemist"](around:50000,$lat,$lon);
+              way["shop"="chemist"](around:50000,$lat,$lon);
+              node["healthcare"="pharmacy"](around:50000,$lat,$lon);
+            );
+            out center tags;
         """.trimIndent()
 
         var connection: HttpURLConnection? = null
         return try {
-            val encoded = URLEncoder.encode(query, "UTF-8")
-            connection = URL("https://overpass-api.de/api/interpreter?data=$encoded").openConnection() as HttpURLConnection
+            val url = URL("https://overpass-api.de/api/interpreter?data=" + URLEncoder.encode(query, "UTF-8"))
+            connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = "GET"
             connection.connectTimeout = 15000
             connection.readTimeout = 20000
-            connection.setRequestProperty("User-Agent", "PillPointDeliveryApp/1.0")
+            connection.setRequestProperty("User-Agent", "PillPointDelivery/1.0")
 
-            if (connection.responseCode !in 200..299) return emptyList()
+            if (connection.responseCode != 200) return emptyList()
 
-            val response = BufferedReader(InputStreamReader(connection.inputStream)).use { it.readText() }
-            val elements = JSONObject(response).optJSONArray("elements") ?: return emptyList()
-            val result = mutableListOf<Pharmacy>()
+            val reader = BufferedReader(InputStreamReader(connection.inputStream))
+            val response = StringBuilder()
+            var line: String?
+            while (reader.readLine().also { line = it } != null) {
+                response.append(line)
+            }
+            reader.close()
+
+            val root = JSONObject(response.toString())
+            val elements = root.optJSONArray("elements") ?: return emptyList()
+            val list = mutableListOf<Pharmacy>()
 
             for (i in 0 until elements.length()) {
-                val item = elements.optJSONObject(i) ?: continue
+                val item = elements.getJSONObject(i)
                 val tags = item.optJSONObject("tags") ?: JSONObject()
                 val center = item.optJSONObject("center")
-                val lat = if (item.has("lat")) item.optDouble("lat", Double.NaN) else center?.optDouble("lat", Double.NaN) ?: Double.NaN
-                val lon = if (item.has("lon")) item.optDouble("lon", Double.NaN) else center?.optDouble("lon", Double.NaN) ?: Double.NaN
-                if (lat.isNaN() || lon.isNaN()) continue
 
-                val name = tags.optString("name").ifBlank { tags.optString("brand").ifBlank { "Pharmacy" } }
-                val address = listOf(
-                    tags.optString("addr:housenumber"),
-                    tags.optString("addr:street"),
-                    tags.optString("addr:suburb")
-                ).filter { it.isNotBlank() }.joinToString(", ")
+                val pLat = item.optDouble("lat", center?.optDouble("lat", Double.NaN) ?: Double.NaN)
+                val pLon = item.optDouble("lon", center?.optDouble("lon", Double.NaN) ?: Double.NaN)
+                if (pLat.isNaN() || pLon.isNaN()) continue
 
-                result.add(Pharmacy(name, address, lat, lon))
+                val name = tags.optString("name").ifBlank {
+                    tags.optString("brand").ifBlank { "Pharmacy" }
+                }
+                val street = tags.optString("addr:street")
+                val suburb = tags.optString("addr:suburb").ifBlank { tags.optString("addr:city") }
+                val address = listOf(street, suburb).filter { it.isNotBlank() }.joinToString(", ").ifBlank { name }
+
+                list.add(Pharmacy(name, address, pLat, pLon))
             }
-            result.distinctBy { "${it.name}|${it.latitude}|${it.longitude}" }.take(50)
-        } catch (_: Exception) { emptyList() }
-        finally { connection?.disconnect() }
+            list.distinctBy { "${it.latitude},${it.longitude}" }
+        } catch (_: Exception) {
+            emptyList()
+        } finally {
+            connection?.disconnect()
+        }
     }
 
-    // JavaScript bridge to handle clicks on the Leaflet popup buttons
+    // Uses OpenStreetMap's Nominatim Web API for ultra-reliable address searching
+    private fun searchLocation(locationName: String) {
+        lifecycleScope.launch {
+            val coords = withContext(Dispatchers.IO) {
+                try {
+                    val encodedName = URLEncoder.encode(locationName, "UTF-8")
+                    val url = URL("https://nominatim.openstreetmap.org/search?q=$encodedName&format=json&limit=1")
+                    val connection = url.openConnection() as HttpURLConnection
+                    connection.requestMethod = "GET"
+                    connection.setRequestProperty("User-Agent", "PillPointDelivery/1.0")
+
+                    if (connection.responseCode == 200) {
+                        val reader = BufferedReader(InputStreamReader(connection.inputStream))
+                        val response = StringBuilder()
+                        var line: String?
+                        while (reader.readLine().also { line = it } != null) {
+                            response.append(line)
+                        }
+                        reader.close()
+
+                        val jsonArray = JSONArray(response.toString())
+                        if (jsonArray.length() > 0) {
+                            val obj = jsonArray.getJSONObject(0)
+                            val lat = obj.getString("lat").toDouble()
+                            val lon = obj.getString("lon").toDouble()
+                            Pair(lat, lon)
+                        } else {
+                            null
+                        }
+                    } else {
+                        null
+                    }
+                } catch (_: Exception) {
+                    null
+                }
+            }
+
+            if (coords == null) {
+                Toast.makeText(this@Store_Locator, "Location not found", Toast.LENGTH_SHORT).show()
+            } else {
+                currentLat = coords.first
+                currentLon = coords.second
+                loadMapWithPharmacies(currentLat, currentLon, locationName)
+            }
+        }
+    }
+
     inner class WebAppInterface(private val activity: Activity) {
         @JavascriptInterface
         fun onPharmacySelected(name: String, address: String) {

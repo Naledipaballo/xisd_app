@@ -148,8 +148,11 @@
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
                             android:background="@drawable/edit_text_background"
+                            android:backgroundTint="@color/dark_blue"
+                            android:clickable="true"
+                            android:focusable="false"
                             android:hint="HH:mm"
-                            android:inputType="time"
+                            android:inputType="none"
                             android:padding="10dp"
                             android:textSize="14sp" />
 
@@ -176,8 +179,11 @@
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
                             android:background="@drawable/edit_text_background"
+                            android:backgroundTint="@color/dark_blue"
+                            android:clickable="true"
+                            android:focusable="false"
                             android:hint="dd/MM/yyyy"
-                            android:inputType="date"
+                            android:inputType="none"
                             android:padding="10dp"
                             android:textSize="14sp" />
 
