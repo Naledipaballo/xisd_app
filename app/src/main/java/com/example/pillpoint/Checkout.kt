@@ -1,8 +1,10 @@
 package com.example.pillpoint
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
@@ -17,8 +19,12 @@ class Checkout : AppCompatActivity() {
     private lateinit var etFullName: EditText
     private lateinit var etPhone: EditText
     private lateinit var etDeliveryAddress: EditText
+    private lateinit var tvStoreLocator: TextView
     private lateinit var rgPaymentMethod: RadioGroup
-    private lateinit var tvSubtotal: TextView
+    private lateinit var layoutCardDetails: LinearLayout
+    private lateinit var etCardNumber: EditText
+    private lateinit var etExpiry: EditText
+    private lateinit var etCvv: EditText
     private lateinit var tvDeliveryFee: TextView
     private lateinit var tvTotalAmount: TextView
     private lateinit var btnPlaceOrder: Button
@@ -26,7 +32,7 @@ class Checkout : AppCompatActivity() {
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
 
-    private val deliveryFeeAmount = 50.00
+    private val deliveryFeeAmount = 35.00 // Updated to match layout fee (R35.00)
 
     private var subtotalAmount = 0.0
     private var totalAmount = 0.0
@@ -39,7 +45,7 @@ class Checkout : AppCompatActivity() {
         initViews()
         loadOrderData()
         calculateTotals()
-        setupClickListeners()
+        setupListeners()
     }
 
     private fun initViews() {
@@ -47,8 +53,12 @@ class Checkout : AppCompatActivity() {
         etFullName = findViewById(R.id.etFullName)
         etPhone = findViewById(R.id.etPhone)
         etDeliveryAddress = findViewById(R.id.etDeliveryAddress)
+        tvStoreLocator = findViewById(R.id.tvStoreLocator)
         rgPaymentMethod = findViewById(R.id.rgPaymentMethod)
-        tvSubtotal = findViewById(R.id.tvSubtotal)
+        layoutCardDetails = findViewById(R.id.layoutCardDetails)
+        etCardNumber = findViewById(R.id.etCardNumber)
+        etExpiry = findViewById(R.id.etExpiry)
+        etCvv = findViewById(R.id.etCvv)
         tvDeliveryFee = findViewById(R.id.tvDeliveryFee)
         tvTotalAmount = findViewById(R.id.tvTotalAmount)
         btnPlaceOrder = findViewById(R.id.btnPlaceOrder)
@@ -71,14 +81,30 @@ class Checkout : AppCompatActivity() {
 
         totalAmount = subtotalAmount + fee
 
-        tvSubtotal.text = String.format("R%.2f", subtotalAmount)
         tvDeliveryFee.text = String.format("R%.2f", fee)
         tvTotalAmount.text = String.format("R%.2f", totalAmount)
+
+        // Update the custom button text matching your new UI design format
+        btnPlaceOrder.text = String.format("Confirm & Place Order (R%.2f)", totalAmount)
     }
 
-    private fun setupClickListeners() {
+    private fun setupListeners() {
         btnBack.setOnClickListener {
             finish()
+        }
+
+        // Toggle card details visibility based on the selected payment option
+        rgPaymentMethod.setOnCheckedChangeListener { _, checkedId ->
+            if (checkedId == R.id.rbCard) {
+                layoutCardDetails.visibility = View.VISIBLE
+            } else {
+                layoutCardDetails.visibility = View.GONE
+            }
+        }
+
+        tvStoreLocator.setOnClickListener {
+            // TODO: Implement Store Locator Intent or Fragment navigation here
+            Toast.makeText(this, "Store Locator clicked", Toast.LENGTH_SHORT).show()
         }
 
         btnPlaceOrder.setOnClickListener {
@@ -111,13 +137,37 @@ class Checkout : AppCompatActivity() {
             return false
         }
 
-        if (rgPaymentMethod.checkedRadioButtonId == -1) {
+        val checkedPaymentId = rgPaymentMethod.checkedRadioButtonId
+        if (checkedPaymentId == -1) {
             Toast.makeText(
                 this,
                 "Please select a payment method",
                 Toast.LENGTH_SHORT
             ).show()
             return false
+        }
+
+        // Additional validation if Credit/Debit Card is selected
+        if (checkedPaymentId == R.id.rbCard) {
+            val cardNumber = etCardNumber.text.toString().trim()
+            val expiry = etExpiry.text.toString().trim()
+            val cvv = etCvv.text.toString().trim()
+
+            if (cardNumber.length < 15) {
+                etCardNumber.error = "Enter a valid card number"
+                etCardNumber.requestFocus()
+                return false
+            }
+            if (expiry.isEmpty()) {
+                etExpiry.error = "Enter expiry date (MM/YY)"
+                etExpiry.requestFocus()
+                return false
+            }
+            if (cvv.length < 3) {
+                etCvv.error = "Enter a valid CVV"
+                etCvv.requestFocus()
+                return false
+            }
         }
 
         if (CartRepository.items.isEmpty()) {
@@ -157,6 +207,7 @@ class Checkout : AppCompatActivity() {
 
         val paymentMethod = when (rgPaymentMethod.checkedRadioButtonId) {
             R.id.rbCard -> "Credit/Debit Card"
+            R.id.rbEft -> "Instant EFT"
             R.id.rbCod -> "Cash on Delivery"
             else -> {
                 Toast.makeText(
@@ -229,7 +280,7 @@ class Checkout : AppCompatActivity() {
             .addOnFailureListener { exception ->
                 isPlacingOrder = false
                 btnPlaceOrder.isEnabled = true
-                btnPlaceOrder.text = "Place Order"
+                calculateTotals() // Re-apply grand total text to button
 
                 Toast.makeText(
                     this,
