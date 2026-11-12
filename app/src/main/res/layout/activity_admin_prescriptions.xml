@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#DFEEF3">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Prescription Management"
+            android:textColor="@color/dark_blue"
+            android:textSize="23sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Review customer prescription submissions"
+            android:textColor="@color/dark_blue"
+            android:textSize="14sp"
+            android:layout_marginTop="5dp" />
+
+        <Button
+            android:id="@+id/btnBackToAdminDashboard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Back to Dashboard"
+            android:textAllCaps="false"
+            android:layout_marginTop="12dp" />
+
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/prescriptionsProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="12dp"
+        android:visibility="gone" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:id="@+id/prescriptionContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp" />
+
+    </ScrollView>
+
+</LinearLayout>

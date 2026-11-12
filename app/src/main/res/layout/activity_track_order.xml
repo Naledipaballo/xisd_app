@@ -16,59 +16,38 @@
             android:id="@+id/btnBackTrack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
             android:backgroundTint="#003049"
             android:text="← Back"
             android:textColor="#FFFFFF" />
 
-        <!-- Page heading -->
+        <!-- Page title -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:text="Track Order"
+            android:layout_marginTop="18dp"
+            android:text="Track Your Order"
             android:textColor="#003049"
-            android:textSize="28sp"
+            android:textSize="26sp"
             android:textStyle="bold" />
 
-    <!-- Form Card Container -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/edit_text_background"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:layout_marginBottom="24dp">
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            android:text="Enter your order ID to view your order status and delivery details."
+            android:layout_marginTop="6dp"
+            android:text="Enter your order ID to view the latest delivery status."
             android:textColor="#444444"
-            android:textSize="15sp" />
+            android:textSize="14sp" />
 
         <!-- Order ID input -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="6dp"
-            android:text="Order ID"
-            android:textColor="#003049"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
         <EditText
             android:id="@+id/orderNumber"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/edit_text_background"
-            android:layout_marginBottom="12dp"
-            android:hint="Enter your order ID"
+            android:layout_marginTop="18dp"
+            android:background="@android:drawable/edit_text"
+            android:hint="Enter Order ID"
             android:inputType="text"
-            android:minHeight="52dp"
-            android:padding="12dp"
-            android:singleLine="true"
+            android:padding="14dp"
             android:textColor="#003049"
             android:textColorHint="#777777" />
 
@@ -77,155 +56,157 @@
             android:id="@+id/trackOrderButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginTop="12dp"
             android:backgroundTint="@color/dark_blue"
             android:text="Track Order"
             android:textColor="#FFFFFF"
-            android:textSize="16sp" />
+            android:textStyle="bold" />
 
         <!-- Order details -->
         <LinearLayout
             android:id="@+id/orderDetailsLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp"
+            android:layout_marginTop="22dp"
             android:background="#FFFFFF"
             android:elevation="3dp"
+            android:orientation="vertical"
+            android:padding="18dp"
             android:visibility="gone">
 
-            <!-- Status heading -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:text="Order Details"
+                android:text="Order Information"
                 android:textColor="#003049"
-                android:textSize="22sp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <!-- Current status -->
             <TextView
                 android:id="@+id/orderStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:padding="12dp"
-                android:background="#DFEEF3"
+                android:layout_marginTop="14dp"
                 android:text="Status: Pending"
                 android:textColor="#003049"
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
-            <!-- Order date -->
             <TextView
                 android:id="@+id/orderDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
+                android:layout_marginTop="8dp"
                 android:text="Order Date:"
                 android:textColor="#444444"
-                android:textSize="15sp" />
+                android:textSize="14sp" />
 
-            <!-- Delivery address -->
             <TextView
                 android:id="@+id/deliveryAddress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
+                android:layout_marginTop="8dp"
                 android:text="Delivery Address:"
                 android:textColor="#444444"
-                android:textSize="15sp" />
+                android:textSize="14sp" />
 
-            <!-- Estimated delivery -->
             <TextView
                 android:id="@+id/estimatedDelivery"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:text="Estimated Delivery: To be confirmed"
+                android:layout_marginTop="8dp"
+                android:text="Estimated Delivery:"
                 android:textColor="#444444"
-                android:textSize="15sp" />
+                android:textSize="14sp" />
 
-            <!-- Delivery progress heading -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="18dp"
+                android:layout_marginBottom="16dp"
+                android:background="#DDDDDD" />
+
+            <!-- Delivery progress -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
                 android:text="Delivery Progress"
                 android:textColor="#003049"
-                android:textSize="19sp"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!-- These labels are updated by TrackOrder.kt -->
             <TextView
+                android:id="@+id/progressPlaced"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:padding="10dp"
+                android:layout_marginTop="14dp"
                 android:text="○ Order Placed"
-                android:textColor="#444444"
+                android:textColor="#777777"
                 android:textSize="15sp" />
 
             <TextView
+                android:id="@+id/progressConfirmed"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:padding="10dp"
+                android:layout_marginTop="12dp"
                 android:text="○ Order Confirmed"
-                android:textColor="#444444"
+                android:textColor="#777777"
                 android:textSize="15sp" />
 
             <TextView
+                android:id="@+id/progressPreparing"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:padding="10dp"
+                android:layout_marginTop="12dp"
                 android:text="○ Pharmacy Preparing Order"
-                android:textColor="#444444"
+                android:textColor="#777777"
                 android:textSize="15sp" />
 
             <TextView
+                android:id="@+id/progressDelivery"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:padding="10dp"
+                android:layout_marginTop="12dp"
                 android:text="○ Out for Delivery"
-                android:textColor="#444444"
+                android:textColor="#777777"
                 android:textSize="15sp" />
 
             <TextView
+                android:id="@+id/progressDelivered"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:padding="10dp"
+                android:layout_marginTop="12dp"
                 android:text="○ Delivered"
-                android:textColor="#444444"
+                android:textColor="#777777"
                 android:textSize="15sp" />
 
-            <!-- Ordered products and totals -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="18dp"
+                android:layout_marginBottom="16dp"
+                android:background="#DDDDDD" />
+
+            <!-- Items -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="Products and Payment"
+                android:text="Order Items"
                 android:textColor="#003049"
-                android:textSize="19sp"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/orderItems"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#F3F7F9"
-                android:padding="12dp"
-                android:text="Your ordered products will appear here."
+                android:layout_marginTop="10dp"
+                android:lineSpacingExtra="5dp"
+                android:text="Your order items will appear here."
                 android:textColor="#444444"
-                android:textSize="15sp" />
+                android:textSize="14sp" />
 
         </LinearLayout>
-
-    </LinearLayout>
 
     </LinearLayout>
 

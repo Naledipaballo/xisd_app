@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
 import android.view.Gravity
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -14,6 +15,9 @@ import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -23,6 +27,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import java.util.Locale
 
 class Prescriptions : AppCompatActivity() {
 
@@ -36,6 +41,7 @@ class Prescriptions : AppCompatActivity() {
     private lateinit var etPrescriptionNumber: EditText
     private lateinit var etPrescriptionDate: EditText
     private lateinit var etAdditionalNotes: EditText
+
     private lateinit var spinnerDeliveryMethod: Spinner
     private lateinit var btnChooseFile: Button
     private lateinit var btnSubmitPrescription: Button
@@ -51,7 +57,8 @@ class Prescriptions : AppCompatActivity() {
     private var selectedFileUri: Uri? = null
     private var isSubmitting = false
 
-    // Allows the user to choose a PDF, JPEG or PNG.
+    // Allows the customer to select a PDF, JPG or PNG.
+    // The selected file is NOT uploaded because Storage is unavailable.
     private val filePickerLauncher =
         registerForActivityResult(
             ActivityResultContracts.OpenDocument()
@@ -76,45 +83,7 @@ class Prescriptions : AppCompatActivity() {
             return
         }
 
-        // Initialize the existing layout.
-        drawerLayout = findViewById(R.id.drawerLayout)
-        btnMenu = findViewById(R.id.btnMenu)
-        navView = findViewById(R.id.navView)
-        ivProfile = findViewById(R.id.ivProfile)
-
-        etPatientName = findViewById(R.id.etPatientName)
-        etDoctorName = findViewById(R.id.etDoctorName)
-        etPrescriptionNumber =
-            findViewById(R.id.etPrescriptionNumber)
-        etPrescriptionDate =
-            findViewById(R.id.etPrescriptionDate)
-        etAdditionalNotes =
-            findViewById(R.id.etAdditionalNotes)
-
-        spinnerDeliveryMethod =
-            findViewById(R.id.spinnerDeliveryMethod)
-
-        btnChooseFile = findViewById(R.id.btnChooseFile)
-        btnSubmitPrescription =
-            findViewById(R.id.btnSubmitPrescription)
-        tvNoPrescriptions =
-            findViewById(R.id.tvNoPrescriptions)
-
-        // Create a container for prescription rows.
-        // The existing tvNoPrescriptions remains the empty-state view.
-        prescriptionsContainer = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-        }
-
-        val parent = tvNoPrescriptions.parent as? LinearLayout
-
-        if (parent != null) {
-            val index = parent.indexOfChild(tvNoPrescriptions)
-            parent.addView(
-                prescriptionsContainer,
-                index + 1
-            )
-        }
+        initializeViews()
 
         setupDeliverySpinner()
         setupDrawerHeader()
@@ -141,6 +110,52 @@ class Prescriptions : AppCompatActivity() {
         loadPrescriptions()
     }
 
+    private fun initializeViews() {
+
+        drawerLayout = findViewById(R.id.drawerLayout)
+        btnMenu = findViewById(R.id.btnMenu)
+        navView = findViewById(R.id.navView)
+        ivProfile = findViewById(R.id.ivProfile)
+
+        etPatientName = findViewById(R.id.etPatientName)
+        etDoctorName = findViewById(R.id.etDoctorName)
+
+        etPrescriptionNumber =
+            findViewById(R.id.etPrescriptionNumber)
+
+        etPrescriptionDate =
+            findViewById(R.id.etPrescriptionDate)
+
+        etAdditionalNotes =
+            findViewById(R.id.etAdditionalNo)
+
+        spinnerDeliveryMethod =
+            findViewById(R.id.spinnerDeliveryMethod)
+
+        btnChooseFile = findViewById(R.id.btnChooseFile)
+
+        btnSubmitPrescription =
+            findViewById(R.id.btnSubmitPrescription)
+
+        tvNoPrescriptions =
+            findViewById(R.id.tvNoPrescriptions)
+
+        prescriptionsContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+
+        val parent = tvNoPrescriptions.parent as? LinearLayout
+
+        if (parent != null) {
+            val index = parent.indexOfChild(tvNoPrescriptions)
+
+            parent.addView(
+                prescriptionsContainer,
+                index + 1
+            )
+        }
+    }
+
     override fun onResume() {
         super.onResume()
 
@@ -150,6 +165,7 @@ class Prescriptions : AppCompatActivity() {
     }
 
     private fun setupDeliverySpinner() {
+
         val methods = arrayOf(
             "Select Method",
             "Home Delivery",
@@ -169,28 +185,33 @@ class Prescriptions : AppCompatActivity() {
         spinnerDeliveryMethod.adapter = adapter
     }
 
+    // Save prescription information in Firestore.
     private fun submitPrescription() {
+
         if (isSubmitting) return
 
         val user = auth.currentUser
 
         if (user == null) {
-            Toast.makeText(
-                this,
-                "Please log in first.",
-                Toast.LENGTH_LONG
-            ).show()
             redirectToLogin()
             return
         }
 
         val patient = etPatientName.text.toString().trim()
         val doctor = etDoctorName.text.toString().trim()
+
         val rxNumber =
             etPrescriptionNumber.text.toString().trim()
-        val date = etPrescriptionDate.text.toString().trim()
-        val notes = etAdditionalNotes.text.toString().trim()
-        val method = spinnerDeliveryMethod.selectedItem.toString()
+
+        val date =
+            etPrescriptionDate.text.toString().trim()
+
+        val notes =
+            etAdditionalNotes.text.toString().trim()
+
+        val method =
+            spinnerDeliveryMethod.selectedItem.toString()
+
         val uri = selectedFileUri
 
         if (
@@ -208,104 +229,109 @@ class Prescriptions : AppCompatActivity() {
             return
         }
 
-        if (uri == null) {
-            Toast.makeText(
-                this,
-                "Please select a prescription file.",
-                Toast.LENGTH_LONG
-            ).show()
-            return
+        var mimeType = "Not uploaded"
+        var fileName = "Not uploaded"
+
+        // We only record the selected file's information.
+        // No actual file is sent to Firebase.
+        if (uri != null) {
+
+            mimeType =
+                contentResolver.getType(uri) ?: "unknown"
+
+            if (
+                mimeType !in listOf(
+                    "application/pdf",
+                    "image/jpeg",
+                    "image/png"
+                )
+            ) {
+                Toast.makeText(
+                    this,
+                    "Please select a PDF, JPG or PNG file.",
+                    Toast.LENGTH_LONG
+                ).show()
+                return
+            }
+
+            fileName =
+                getFileName(uri) ?: "prescription_file"
         }
 
-        val mimeType = contentResolver.getType(uri)
-
-        if (
-            mimeType !in listOf(
-                "application/pdf",
-                "image/jpeg",
-                "image/png"
-            )
-        ) {
-            Toast.makeText(
-                this,
-                "Please select a PDF, JPG or PNG file.",
-                Toast.LENGTH_LONG
-            ).show()
-            return
-        }
-
-        val fileName =
-            getFileName(uri) ?: "prescription_file"
-
-        // Metadata only: this does not upload the actual file.
         val record = hashMapOf<String, Any>(
             "userId" to user.uid,
             "patientName" to patient,
             "doctorName" to doctor,
             "prescriptionNumber" to rxNumber,
             "prescriptionDate" to date,
-            "additionalNotes" to notes,
+            "additionalNo" to notes,
             "deliveryMethod" to method,
             "fileName" to fileName,
-            "fileType" to (mimeType ?: "unknown"),
-            "fileUploaded" to false,
-            "status" to "Pending file upload",
+            "fileType" to mimeType,
+            "fileUpload" to false,
+            "status" to "Pending",
             "createdAt" to FieldValue.serverTimestamp()
         )
 
         isSubmitting = true
+
         btnSubmitPrescription.isEnabled = false
-        btnSubmitPrescription.text = "Saving details..."
+        btnSubmitPrescription.text = "Saving..."
 
         db.collection("prescriptions")
             .add(record)
             .addOnSuccessListener { document ->
 
                 isSubmitting = false
+
                 btnSubmitPrescription.isEnabled = true
                 btnSubmitPrescription.text =
                     "Save Prescription Details"
 
-                tvNoPrescriptions.text =
-                    "Prescription details saved. " +
-                            "The actual file has not been uploaded."
-
                 Toast.makeText(
                     this,
-                    "Saved record: ${document.id}",
+                    "Prescription details saved successfully.",
                     Toast.LENGTH_LONG
                 ).show()
 
-                // Reset form after a successful save.
-                etPatientName.text.clear()
-                etDoctorName.text.clear()
-                etPrescriptionNumber.text.clear()
-                etPrescriptionDate.text.clear()
-                etAdditionalNotes.text.clear()
-                spinnerDeliveryMethod.setSelection(0)
-
-                selectedFileUri = null
-                btnChooseFile.text = "Choose file"
+                resetForm()
 
                 loadPrescriptions()
             }
             .addOnFailureListener { error ->
 
                 isSubmitting = false
+
                 btnSubmitPrescription.isEnabled = true
                 btnSubmitPrescription.text =
                     "Save Prescription Details"
 
                 Toast.makeText(
                     this,
-                    "Could not save: " +
-                            (error.message ?: "Unknown error"),
+                    "Could not save prescription: ${error.message}",
                     Toast.LENGTH_LONG
                 ).show()
             }
     }
 
+    // Clear the form after saving.
+    private fun resetForm() {
+
+        etPatientName.text.clear()
+        etDoctorName.text.clear()
+        etPrescriptionNumber.text.clear()
+        etPrescriptionDate.text.clear()
+        etAdditionalNotes.text.clear()
+
+        spinnerDeliveryMethod.setSelection(0)
+
+        selectedFileUri = null
+        btnChooseFile.text = "Choose file"
+    }
+
+    // Load only the signed-in customer's prescriptions.
     private fun loadPrescriptions() {
+
         val user = auth.currentUser ?: return
 
         db.collection("prescriptions")
@@ -320,109 +346,224 @@ class Prescriptions : AppCompatActivity() {
                 prescriptionsContainer.removeAllViews()
 
                 if (result.isEmpty) {
+
                     tvNoPrescriptions.visibility =
-                        android.view.View.VISIBLE
+                        View.VISIBLE
+
                     tvNoPrescriptions.text =
                         "No prescription records found."
+
                     return@addOnSuccessListener
                 }
 
                 tvNoPrescriptions.visibility =
-                    android.view.View.GONE
+                    View.GONE
 
                 for (document in result.documents) {
+
                     val patient =
-                        document.getString("patientName") ?: "—"
+                        document.getString("patientName")
+                            ?: "Not provided"
+
                     val doctor =
-                        document.getString("doctorName") ?: "—"
+                        document.getString("doctorName")
+                            ?: "Not provided"
+
                     val method =
-                        document.getString("deliveryMethod") ?: "—"
+                        document.getString("deliveryMethod")
+                            ?: "Not provided"
+
                     val date =
-                        document.getString("prescriptionDate") ?: "—"
+                        document.getString("prescriptionDate")
+                            ?: "Not provided"
+
+                    val number =
+                        document.getString("prescriptionNumber")
+                            ?: "Not provided"
+
                     val status =
-                        document.getString("status") ?: "Unknown"
+                        document.getString("status")
+                            ?: "Pending"
+
+                    val reason =
+                        document.getString("rejectionReason")
+                            ?: ""
+
                     val fileName =
-                        document.getString("fileName") ?: "—"
+                        document.getString("fileName")
+                            ?: "Not uploaded"
+
+                    val fileUpload =
+                        document.getBoolean("fileUpload")
+                            ?: false
 
                     addPrescriptionRow(
+                        number,
                         patient,
                         doctor,
                         method,
                         date,
                         status,
-                        fileName
+                        reason,
+                        fileName,
+                        fileUpload
                     )
                 }
             }
             .addOnFailureListener { error ->
+
                 tvNoPrescriptions.visibility =
-                    android.view.View.VISIBLE
+                    View.VISIBLE
+
                 tvNoPrescriptions.text =
-                    "Could not load records. Check connection and Firestore rules."
+                    "Could not load prescriptions. Please try again."
 
                 Toast.makeText(
                     this,
-                    error.message ?: "Failed to load prescriptions",
+                    error.message
+                        ?: "Failed to load prescriptions",
                     Toast.LENGTH_LONG
                 ).show()
             }
     }
 
+    // Display each prescription as a readable card.
     private fun addPrescriptionRow(
+        number: String,
         patient: String,
         doctor: String,
         method: String,
         date: String,
         status: String,
-        fileName: String
+        reason: String,
+        fileName: String,
+        fileUpload: Boolean
     ) {
-        val row = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(6, 10, 6, 10)
-            setBackgroundColor(android.graphics.Color.WHITE)
+
+        val card = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(14), dp(16), dp(14))
+            background = roundedBackground(Color.WHITE)
         }
 
-        val values = listOf(
-            patient,
-            doctor,
-            method,
-            date,
-            status,
-            fileName
+        addCardText(
+            card,
+            "Prescription #$number",
+            18,
+            Color.rgb(0, 48, 73),
+            true
         )
 
-        values.forEach { value ->
-            val cell = TextView(this).apply {
-                text = value
-                textSize = 10f
-                gravity = Gravity.CENTER
-                setPadding(3, 4, 3, 4)
-                maxLines = 3
-                setTextColor(
-                    android.graphics.Color.DKGRAY
-                )
+        addCardText(card, "Patient: $patient")
+        addCardText(card, "Doctor: $doctor")
+        addCardText(card, "Prescription date: $date")
+        addCardText(card, "Delivery method: $method")
 
-                layoutParams = LinearLayout.LayoutParams(
-                    0,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    1f
-                )
-            }
+        addCardText(
+            card,
+            "File uploaded: ${if (fileUpload) "Yes" else "No"}"
+        )
 
-            row.addView(cell)
+        addCardText(
+            card,
+            "File name: $fileName"
+        )
+
+        addCardText(
+            card,
+            "Status: $status",
+            16,
+            getStatusColor(status),
+            true
+        )
+
+        if (
+            status.equals("Rejected", ignoreCase = true) &&
+            reason.isNotBlank()
+        ) {
+
+            addCardText(
+                card,
+                "Reason for rejection: $reason",
+                14,
+                Color.rgb(193, 18, 31),
+                true
+            )
         }
 
-        prescriptionsContainer.addView(row)
+        val params = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            setMargins(
+                dp(10),
+                dp(8),
+                dp(10),
+                dp(10)
+            )
+        }
+
+        prescriptionsContainer.addView(card, params)
+    }
+
+    private fun addCardText(
+        parent: LinearLayout,
+        value: String,
+        size: Int = 14,
+        color: Int = Color.DKGRAY,
+        bold: Boolean = false
+    ) {
+
+        val textView = TextView(this).apply {
+
+            text = value
+            textSize = size.toFloat()
+            setTextColor(color)
+
+            if (bold) {
+                setTypeface(null, Typeface.BOLD)
+            }
+
+            setPadding(0, dp(5), 0, dp(5))
+        }
+
+        parent.addView(textView)
+    }
+
+    private fun getStatusColor(status: String): Int {
+
+        return when (
+            status.lowercase(Locale.getDefault())
+        ) {
+            "approved" -> Color.rgb(35, 130, 75)
+
+            "rejected" -> Color.rgb(193, 18, 31)
+
+            else -> Color.rgb(190, 110, 0)
+        }
+    }
+
+    private fun roundedBackground(color: Int): GradientDrawable {
+
+        return GradientDrawable().apply {
+            setColor(color)
+            cornerRadius = dp(12).toFloat()
+        }
+    }
+
+    private fun dp(value: Int): Int {
+        return (value * resources.displayMetrics.density).toInt()
     }
 
     private fun setupDrawerHeader() {
+
         if (navView.headerCount == 0) return
 
         val header = navView.getHeaderView(0)
 
         val txtEmail =
             header.findViewById<TextView>(R.id.txtEmail)
+
         val txtUserName =
             header.findViewById<TextView>(R.id.txtUserName)
 
@@ -434,7 +575,8 @@ class Prescriptions : AppCompatActivity() {
                     intent.getStringExtra("USER_EMAIL").orEmpty()
                 }
 
-        txtEmail?.text = email.ifEmpty { "user@email.com" }
+        txtEmail?.text =
+            email.ifEmpty { "user@email.com" }
 
         val name = user?.displayName
 
@@ -447,12 +589,15 @@ class Prescriptions : AppCompatActivity() {
     }
 
     private fun setupNavigationDrawer() {
+
         btnMenu.setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
         }
 
         navView.setNavigationItemSelectedListener { item ->
+
             when (item.itemId) {
+
                 R.id.nav_dashboard -> {
                     startActivity(Intent(this, Home::class.java))
                     finish()
@@ -471,7 +616,7 @@ class Prescriptions : AppCompatActivity() {
                 }
 
                 R.id.nav_prescription -> {
-                    // Already on this screen.
+                    // Already on the prescriptions screen.
                 }
 
                 R.id.nav_reminders -> {
@@ -507,9 +652,11 @@ class Prescriptions : AppCompatActivity() {
     }
 
     private fun getFileName(uri: Uri): String? {
+
         var result: String? = null
 
         if (uri.scheme == "content") {
+
             contentResolver.query(
                 uri,
                 null,
@@ -517,7 +664,9 @@ class Prescriptions : AppCompatActivity() {
                 null,
                 null
             )?.use { cursor ->
+
                 if (cursor.moveToFirst()) {
+
                     val index = cursor.getColumnIndex(
                         OpenableColumns.DISPLAY_NAME
                     )
@@ -534,15 +683,20 @@ class Prescriptions : AppCompatActivity() {
     }
 
     private fun logoutUser() {
+
         SessionManager.logout(this)
         auth.signOut()
+
         redirectToLogin()
     }
 
     private fun redirectToLogin() {
+
         val intent = Intent(this, Login::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+            flags =
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
 
         startActivity(intent)

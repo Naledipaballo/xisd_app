@@ -184,7 +184,7 @@
                     android:textStyle="bold" />
 
                 <EditText
-                    android:id="@+id/etAdditionalNotes"
+                    android:id="@+id/etAdditionalNo"
                     android:layout_width="match_parent"
                     android:layout_height="80dp"
                     android:background="@drawable/edit_text_background"

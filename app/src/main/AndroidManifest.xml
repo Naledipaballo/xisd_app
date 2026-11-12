@@ -80,6 +80,26 @@
         <activity android:name=".MyOrders"
             android:exported="false"/>
 
+        <activity
+            android:name=".AdminLogin"
+            android:exported="false" />
+
+        <activity
+            android:name=".AdminDashboard"
+            android:exported="false" />
+
+        <activity
+            android:name=".AdminOrders"
+            android:exported="false" />
+
+        <activity
+            android:name=".AdminOrderDetails"
+            android:exported="false" />
+
+        <activity
+            android:name=".AdminPrescriptions"
+            android:exported="false" />
+
         <!-- Broadcast Receivers -->
         <receiver
             android:name=".ReminderReceiver"
