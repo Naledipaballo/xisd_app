@@ -19,110 +19,104 @@ import java.util.Locale
 
 class TrackOrder : AppCompatActivity() {
 
-    // Firebase
     private lateinit var auth: FirebaseAuth
-    private lateinit var db: FirebaseFirestore
+    private lateinit var firestore: FirebaseFirestore
 
-    // Layout views
-    private lateinit var etOrderNumber: EditText
-    private lateinit var btnTrackOrder: Button
+    private lateinit var orderNumber: EditText
+    private lateinit var trackOrderButton: Button
     private lateinit var orderDetailsLayout: LinearLayout
-    private lateinit var tvOrderStatus: TextView
-    private lateinit var tvOrderDate: TextView
-    private lateinit var tvDeliveryAddress: TextView
-    private lateinit var tvEstimatedDelivery: TextView
-    private lateinit var tvOrderItems: TextView
-    private lateinit var btnBackTrack: Button
 
-    // Delivery progress views
+    private lateinit var orderStatus: TextView
+    private lateinit var orderDate: TextView
+    private lateinit var deliveryAddress: TextView
+    private lateinit var pharmacyDetails: TextView
+    private lateinit var estimatedDelivery: TextView
+    private lateinit var orderItems: TextView
+
     private lateinit var progressPlaced: TextView
     private lateinit var progressConfirmed: TextView
     private lateinit var progressPreparing: TextView
     private lateinit var progressDelivery: TextView
     private lateinit var progressDelivered: TextView
 
-    // Firestore listener
     private var orderListener: ListenerRegistration? = null
-    private var trackedOrderId: String? = null
+    private var trackedOrderId: String = ""
+
+    private val darkBlue = Color.parseColor("#003049")
+    private val grey = Color.parseColor("#777777")
+    private val green = Color.parseColor("#16803C")
+    private val red = Color.parseColor("#C1121F")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_track_order)
 
         auth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
+        firestore = FirebaseFirestore.getInstance()
 
-        initViews()
-
-        // Back button
-        btnBackTrack.setOnClickListener {
-            finish()
-        }
-
-        // Track button
-        btnTrackOrder.setOnClickListener {
-            val orderId = etOrderNumber.text.toString().trim()
-
-            if (orderId.isEmpty()) {
-                etOrderNumber.error = "Please enter your order ID"
-                return@setOnClickListener
-            }
-
-            displayOrderDetails(orderId)
-        }
-
-        // If opened from My Orders, automatically track that order
-        val orderId = intent.getStringExtra("ORDER_ID")
-
-        if (!orderId.isNullOrEmpty()) {
-            etOrderNumber.setText(orderId)
-            trackedOrderId = orderId
-        }
-    }
-
-    private fun initViews() {
-
-        etOrderNumber = findViewById(R.id.orderNumber)
-        btnTrackOrder = findViewById(R.id.trackOrderButton)
+        // Connect XML views
+        orderNumber = findViewById(R.id.orderNumber)
+        trackOrderButton = findViewById(R.id.trackOrderButton)
         orderDetailsLayout = findViewById(R.id.orderDetailsLayout)
 
-        tvOrderStatus = findViewById(R.id.orderStatus)
-        tvOrderDate = findViewById(R.id.orderDate)
-        tvDeliveryAddress = findViewById(R.id.deliveryAddress)
-        tvEstimatedDelivery = findViewById(R.id.estimatedDelivery)
-        tvOrderItems = findViewById(R.id.orderItems)
-
-        btnBackTrack = findViewById(R.id.btnBackTrack)
+        orderStatus = findViewById(R.id.orderStatus)
+        orderDate = findViewById(R.id.orderDate)
+        deliveryAddress = findViewById(R.id.deliveryAddress)
+        pharmacyDetails = findViewById(R.id.pharmacyDetails)
+        estimatedDelivery = findViewById(R.id.estimatedDelivery)
+        orderItems = findViewById(R.id.orderItems)
 
         progressPlaced = findViewById(R.id.progressPlaced)
         progressConfirmed = findViewById(R.id.progressConfirmed)
         progressPreparing = findViewById(R.id.progressPreparing)
         progressDelivery = findViewById(R.id.progressDelivery)
         progressDelivered = findViewById(R.id.progressDelivered)
+
+        findViewById<Button>(R.id.btnBackTrack).setOnClickListener {
+            finish()
+        }
+
+        trackOrderButton.setOnClickListener {
+            val enteredOrderId = orderNumber.text.toString().trim()
+
+            if (enteredOrderId.isEmpty()) {
+                orderNumber.error = "Please enter your order ID"
+                return@setOnClickListener
+            }
+
+            trackedOrderId = enteredOrderId
+            orderDetailsLayout.visibility = View.GONE
+            listenToOrder(trackedOrderId)
+        }
+
+        // Automatically track an order opened from another screen.
+        val receivedOrderId = intent.getStringExtra("ORDER_ID")
+
+        if (!receivedOrderId.isNullOrBlank()) {
+            trackedOrderId = receivedOrderId
+            orderNumber.setText(receivedOrderId)
+        }
     }
 
     override fun onStart() {
         super.onStart()
 
-        // Start listening if an order ID was supplied
-        trackedOrderId?.let {
-            listenToOrder(it)
+        if (trackedOrderId.isNotBlank()) {
+            listenToOrder(trackedOrderId)
         }
     }
 
     override fun onStop() {
         super.onStop()
-
-        // Stop listening when the screen is no longer visible
         orderListener?.remove()
         orderListener = null
     }
 
-    private fun displayOrderDetails(orderId: String) {
+    private fun listenToOrder(orderId: String) {
 
-        val user = auth.currentUser
+        val currentUser = auth.currentUser
 
-        if (user == null) {
+        if (currentUser == null) {
             Toast.makeText(
                 this,
                 "Please log in to track your order.",
@@ -131,55 +125,28 @@ class TrackOrder : AppCompatActivity() {
             return
         }
 
-        trackedOrderId = orderId
-
-        // Remove any previous listener
-        orderListener?.remove()
-        orderListener = null
-
-        orderDetailsLayout.visibility = View.GONE
-        btnTrackOrder.isEnabled = false
-        btnTrackOrder.text = "Loading..."
-
-        listenToOrder(orderId)
-    }
-
-    private fun listenToOrder(orderId: String) {
-
-        val user = auth.currentUser
-
-        if (user == null) {
-            Toast.makeText(
-                this,
-                "Please log in first.",
-                Toast.LENGTH_LONG
-            ).show()
-            return
-        }
-
-        // Remove an existing listener before creating another one
         orderListener?.remove()
 
-        orderListener = db.collection("orders")
+        trackOrderButton.isEnabled = false
+        trackOrderButton.text = "Loading..."
+
+        orderListener = firestore.collection("orders")
             .document(orderId)
-            .addSnapshotListener { document, error ->
+            .addSnapshotListener { snapshot, error ->
 
-                btnTrackOrder.isEnabled = true
-                btnTrackOrder.text = "Track Order"
+                trackOrderButton.isEnabled = true
+                trackOrderButton.text = "Track Order"
 
                 if (error != null) {
-                    orderDetailsLayout.visibility = View.GONE
-
                     Toast.makeText(
                         this,
-                        "Unable to load order: ${error.message}",
+                        "Unable to retrieve order: ${error.message}",
                         Toast.LENGTH_LONG
                     ).show()
-
                     return@addSnapshotListener
                 }
 
-                if (document == null || !document.exists()) {
+                if (snapshot == null || !snapshot.exists()) {
                     orderDetailsLayout.visibility = View.GONE
 
                     Toast.makeText(
@@ -187,16 +154,15 @@ class TrackOrder : AppCompatActivity() {
                         "Order not found. Please check your order ID.",
                         Toast.LENGTH_LONG
                     ).show()
-
                     return@addSnapshotListener
                 }
 
-                val data = document.data ?: return@addSnapshotListener
+                val data = snapshot.data ?: return@addSnapshotListener
 
-                // Make sure the signed-in customer owns this order
-                val orderUserId = data["userId"] as? String
+                // Customers may only track their own orders.
+                val ownerId = data["userId"]?.toString()
 
-                if (orderUserId != user.uid) {
+                if (ownerId != currentUser.uid) {
                     orderDetailsLayout.visibility = View.GONE
 
                     Toast.makeText(
@@ -204,113 +170,132 @@ class TrackOrder : AppCompatActivity() {
                         "You are not authorised to view this order.",
                         Toast.LENGTH_LONG
                     ).show()
-
-                    orderListener?.remove()
-                    orderListener = null
-                    trackedOrderId = null
-
                     return@addSnapshotListener
                 }
 
-                // Display the latest order information
-                showOrder(data)
+                displayOrderDetails(orderId, data)
             }
     }
 
-    private fun showOrder(data: Map<String, Any>) {
+    private fun displayOrderDetails(
+        orderId: String,
+        data: Map<String, Any>
+    ) {
 
         orderDetailsLayout.visibility = View.VISIBLE
 
-        val status = data["status"] as? String ?: "Pending"
-        val address = data["deliveryAddress"] as? String ?: "Not provided"
-        val paymentMethod = data["paymentMethod"] as? String ?: "Not provided"
-
-        val subtotal = (data["subtotal"] as? Number)?.toDouble() ?: 0.0
-        val deliveryFee = (data["deliveryFee"] as? Number)?.toDouble() ?: 0.0
-        val total = (data["total"] as? Number)?.toDouble() ?: 0.0
-
         // Order status
-        tvOrderStatus.text = "Status: $status"
+        val status = data["status"]?.toString() ?: "Pending"
 
-        // Update the delivery progress tracker
-        updateDeliveryProgress(status)
-
-        // Delivery address
-        tvDeliveryAddress.text = "Delivery Address: $address"
+        orderStatus.text = "Status: $status"
+        orderStatus.setTextColor(
+            if (status.equals("Cancelled", ignoreCase = true)) red
+            else darkBlue
+        )
 
         // Order date
-        val timestamp = data["createdAt"] as? Timestamp
+        val createdAt = data["createdAt"]
 
-        if (timestamp != null) {
-            val date = timestamp.toDate()
-            val dateFormat = SimpleDateFormat(
-                "dd MMM yyyy, HH:mm",
-                Locale.getDefault()
-            )
+        orderDate.text = "Order Date: ${formatDate(createdAt)}"
 
-            tvOrderDate.text = "Order Date: ${dateFormat.format(date)}"
+        // Customer delivery address
+        val address = data["deliveryAddress"]?.toString()
+            ?: "Not provided"
+
+        deliveryAddress.text = "Delivery Address:\n$address"
+
+        // Selected pharmacy details
+        val pharmacyName = data["pharmacyName"]?.toString()
+        val pharmacyAddress = data["pharmacyAddress"]?.toString()
+        val pharmacyPhone = data["pharmacyPhone"]?.toString()
+        val pharmacyId = data["pharmacyId"]?.toString()
+
+        val pharmacyText = StringBuilder()
+
+        if (!pharmacyName.isNullOrBlank()) {
+            pharmacyText.append("Pharmacy: $pharmacyName\n")
+        }
+
+        if (!pharmacyAddress.isNullOrBlank()) {
+            pharmacyText.append("Address: $pharmacyAddress\n")
+        }
+
+        if (!pharmacyPhone.isNullOrBlank()) {
+            pharmacyText.append("Phone: $pharmacyPhone\n")
+        }
+
+        if (!pharmacyId.isNullOrBlank()) {
+            pharmacyText.append("Pharmacy ID: $pharmacyId")
+        }
+
+        pharmacyDetails.text = if (pharmacyText.isNotEmpty()) {
+            "Selected Pharmacy:\n$pharmacyText"
         } else {
-            tvOrderDate.text = "Order Date: Not available"
+            "Selected Pharmacy:\nNo pharmacy was selected for this order."
         }
 
         // Estimated delivery
-        tvEstimatedDelivery.text = when {
-            status.equals("Delivered", ignoreCase = true) ->
-                "Delivery: Your order has been delivered."
+        val estimated = data["estimatedDelivery"]
 
-            status.equals("Cancelled", ignoreCase = true) ->
-                "Delivery: This order has been cancelled."
+        estimatedDelivery.text =
+            "Estimated Delivery: ${formatEstimatedDelivery(estimated)}"
 
-            else ->
-                "Estimated Delivery: Not yet provided by the pharmacy."
-        }
+        // Delivery progress
+        updateDeliveryProgress(status)
 
-        // Order items
+        // Order items and payment information
+        displayItems(data)
+    }
+
+    private fun displayItems(data: Map<String, Any>) {
+
+        val details = StringBuilder()
+
         val items = data["items"] as? List<*>
-        val itemsText = StringBuilder()
 
-        if (!items.isNullOrEmpty()) {
+        if (items.isNullOrEmpty()) {
+            details.append("No order items found.\n")
+        } else {
 
             for (item in items) {
 
-                val itemMap = item as? Map<*, *> ?: continue
+                val itemData = item as? Map<*, *> ?: continue
 
-                val name = itemMap["name"] as? String ?: "Medication"
-                val quantity = (itemMap["quantity"] as? Number)?.toInt() ?: 1
-                val price = (itemMap["price"] as? Number)?.toDouble() ?: 0.0
-                val lineTotal =
-                    (itemMap["lineTotal"] as? Number)?.toDouble()
-                        ?: (price * quantity)
+                val name = itemData["name"]?.toString()
+                    ?: "Medication"
 
-                itemsText.append("• $name\n")
-                itemsText.append("  Quantity: $quantity\n")
-                itemsText.append("  Unit Price: R${"%.2f".format(Locale.US, price)}\n")
-                itemsText.append("  Line Total: R${"%.2f".format(Locale.US, lineTotal)}\n\n")
+                val quantity = itemData["quantity"]?.toString()
+                    ?: "1"
+
+                val lineTotal = itemData["lineTotal"]?.toString()
+                val price = itemData["price"]?.toString()
+
+                val itemAmount = lineTotal ?: price ?: "0.00"
+
+                details.append("• $name\n")
+                details.append("  Quantity: $quantity\n")
+                details.append("  Amount: R${formatAmount(itemAmount)}\n\n")
             }
-
-        } else {
-            itemsText.append("No order items found.")
         }
 
-        // Payment and totals
-        itemsText.append("------------------------------\n")
-        itemsText.append(
-            "Subtotal: R${"%.2f".format(Locale.US, subtotal)}\n"
-        )
-        itemsText.append(
-            "Delivery Fee: R${"%.2f".format(Locale.US, deliveryFee)}\n"
-        )
-        itemsText.append(
-            "Total: R${"%.2f".format(Locale.US, total)}\n"
-        )
-        itemsText.append("Payment Method: $paymentMethod")
+        val subtotal = data["subtotal"]
+        val deliveryFee = data["deliveryFee"]
+        val total = data["total"]
+        val paymentMethod = data["paymentMethod"]?.toString()
+            ?: "Not specified"
 
-        tvOrderItems.text = itemsText.toString()
+        details.append("------------------------------\n")
+        details.append("Subtotal: R${formatAmount(subtotal)}\n")
+        details.append("Delivery Fee: R${formatAmount(deliveryFee)}\n")
+        details.append("Total: R${formatAmount(total)}\n")
+        details.append("Payment Method: $paymentMethod\n")
+
+        orderItems.text = details.toString()
     }
 
     private fun updateDeliveryProgress(status: String) {
 
-        val steps = listOf(
+        val progressViews = listOf(
             progressPlaced,
             progressConfirmed,
             progressPreparing,
@@ -326,41 +311,84 @@ class TrackOrder : AppCompatActivity() {
             "Delivered"
         )
 
+        // Reset all progress steps.
+        for (i in progressViews.indices) {
+            progressViews[i].text = "○ ${labels[i]}"
+            progressViews[i].setTextColor(grey)
+        }
+
+        if (status.equals("Cancelled", ignoreCase = true)) {
+            for (view in progressViews) {
+                view.text = "✕ ${view.text.toString().substringAfter(" ")}"
+                view.setTextColor(red)
+            }
+            return
+        }
+
         val currentStep = when (status.trim().lowercase(Locale.ROOT)) {
             "pending" -> 0
             "confirmed" -> 1
-            "processing", "ready for delivery" -> 2
+            "processing", "ready for delivery", "preparing" -> 2
             "out for delivery" -> 3
             "delivered" -> 4
-            else -> -1
+            else -> 0
         }
 
-        steps.forEachIndexed { index, textView ->
+        // Mark completed steps.
+        for (i in 0..currentStep) {
+            progressViews[i].text = "✓ ${labels[i]}"
+            progressViews[i].setTextColor(green)
+        }
+    }
 
-            if (currentStep >= 0 && index <= currentStep) {
+    private fun formatDate(value: Any?): String {
 
-                textView.text = "✓ ${labels[index]}"
-                textView.setTextColor(Color.parseColor("#16803C"))
-
-            } else {
-
-                textView.text = "○ ${labels[index]}"
-                textView.setTextColor(Color.parseColor("#777777"))
+        return when (value) {
+            is Timestamp -> {
+                val formatter = SimpleDateFormat(
+                    "dd MMM yyyy, HH:mm",
+                    Locale.getDefault()
+                )
+                formatter.format(value.toDate())
             }
+
+            is Date -> {
+                val formatter = SimpleDateFormat(
+                    "dd MMM yyyy, HH:mm",
+                    Locale.getDefault()
+                )
+                formatter.format(value)
+            }
+
+            else -> value?.toString() ?: "Not available"
         }
+    }
 
-        // Show cancelled orders in red
-        if (status.equals("Cancelled", ignoreCase = true)) {
+    private fun formatEstimatedDelivery(value: Any?): String {
 
-            tvOrderStatus.setTextColor(
-                Color.parseColor("#C1121F")
-            )
+        return when (value) {
+            is Timestamp -> {
+                SimpleDateFormat(
+                    "dd MMM yyyy, HH:mm",
+                    Locale.getDefault()
+                ).format(value.toDate())
+            }
 
-        } else {
+            is Date -> {
+                SimpleDateFormat(
+                    "dd MMM yyyy, HH:mm",
+                    Locale.getDefault()
+                ).format(value)
+            }
 
-            tvOrderStatus.setTextColor(
-                Color.parseColor("#003049")
-            )
+            else -> value?.toString() ?: "Not yet available"
         }
+    }
+
+    private fun formatAmount(value: Any?): String {
+
+        val amount = value?.toString()?.toDoubleOrNull() ?: 0.0
+
+        return String.format(Locale.US, "%.2f", amount)
     }
 }

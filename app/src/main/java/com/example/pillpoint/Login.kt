@@ -22,11 +22,15 @@ import com.google.firebase.auth.GoogleAuthProvider
 class Login : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
+
     private lateinit var emailInput: EditText
     private lateinit var passwordInput: EditText
+
     private lateinit var loginButton: Button
     private lateinit var togglePassword: ImageButton
     private lateinit var googleLoginButton: Button
+    private lateinit var adminLoginButton: Button
+
     private lateinit var googleSignInClient: GoogleSignInClient
 
     private var passwordVisible = false
@@ -38,6 +42,7 @@ class Login : AppCompatActivity() {
         ) { result ->
 
             if (result.resultCode != RESULT_OK || result.data == null) {
+                googleLoginButton.isEnabled = true
                 showMessage("Google Sign-In was cancelled.")
                 return@registerForActivityResult
             }
@@ -51,14 +56,18 @@ class Login : AppCompatActivity() {
                 val idToken = account.idToken
 
                 if (idToken.isNullOrBlank()) {
+                    googleLoginButton.isEnabled = true
+
                     showMessage(
-                        "Google ID token is missing. Check your Firebase configuration."
+                        "Google ID token is missing. Check Firebase configuration."
                     )
                 } else {
                     firebaseAuthWithGoogle(idToken)
                 }
 
             } catch (e: ApiException) {
+                googleLoginButton.isEnabled = true
+
                 showMessage(
                     "Google Sign-In failed: ${e.message}"
                 )
@@ -72,16 +81,19 @@ class Login : AppCompatActivity() {
         // Initialize Firebase Authentication.
         auth = FirebaseAuth.getInstance()
 
-        // Connect to the existing activity_login.xml IDs.
+        // Connect to activity_login.xml.
         emailInput = findViewById(R.id.etEmail)
         passwordInput = findViewById(R.id.etPassword)
+
         loginButton = findViewById(R.id.btnLogin)
         togglePassword = findViewById(R.id.btnTogglePassword)
+
         googleLoginButton = findViewById(R.id.btnGoogleSignIn)
+        adminLoginButton = findViewById(R.id.btnAdminLogin)
 
         val signupLink: TextView = findViewById(R.id.tvSignup)
 
-        // Configure Google Sign-In with the Web Client ID.
+        // Configure Google Sign-In.
         val googleOptions =
             GoogleSignInOptions.Builder(
                 GoogleSignInOptions.DEFAULT_SIGN_IN
@@ -97,7 +109,7 @@ class Login : AppCompatActivity() {
             googleOptions
         )
 
-        // Prefill the email after returning from Signup.
+        // Prefill email after returning from Signup.
         val prefilledEmail =
             intent.getStringExtra("USER_EMAIL")
 
@@ -106,35 +118,49 @@ class Login : AppCompatActivity() {
             passwordInput.requestFocus()
         }
 
-        // Show or hide the password.
+        // Show or hide password.
         togglePassword.setOnClickListener {
             passwordVisible = !passwordVisible
             togglePasswordVisibility()
         }
 
-        // Email and password login.
+        // Customer email and password login.
         loginButton.setOnClickListener {
             loginUser()
         }
 
-        // Google login.
+        // Google Sign-In.
         googleLoginButton.setOnClickListener {
             signInWithGoogle()
         }
 
+        // Navigate to Admin Login.
+        adminLoginButton.setOnClickListener {
+            val intent = Intent(
+                this,
+                AdminLogin::class.java
+            )
+
+            startActivity(intent)
+        }
+
         // Navigate to Signup.
         signupLink.setOnClickListener {
-            startActivity(Intent(this, Signup::class.java))
+            startActivity(
+                Intent(this, Signup::class.java)
+            )
             finish()
         }
     }
 
-    // Toggles password visibility while preserving cursor position.
+    // Show or hide the password.
     private fun togglePasswordVisibility() {
+
         val cursorPosition =
             passwordInput.selectionStart.coerceAtLeast(0)
 
         if (passwordVisible) {
+
             passwordInput.inputType =
                 InputType.TYPE_CLASS_TEXT or
                         InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
@@ -142,7 +168,9 @@ class Login : AppCompatActivity() {
             togglePassword.setImageResource(
                 R.drawable.ic_visibility_off
             )
+
         } else {
+
             passwordInput.inputType =
                 InputType.TYPE_CLASS_TEXT or
                         InputType.TYPE_TEXT_VARIATION_PASSWORD
@@ -161,31 +189,39 @@ class Login : AppCompatActivity() {
         )
     }
 
-    // Launches Google account selection.
+    // Launch Google account selection.
     private fun signInWithGoogle() {
+
         googleLoginButton.isEnabled = false
 
         googleSignInClient.signOut()
             .addOnCompleteListener {
+
                 googleLoginLauncher()
             }
     }
 
     private fun googleLoginLauncher() {
+
         try {
+
             googleSignInLauncher.launch(
                 googleSignInClient.signInIntent
             )
+
         } catch (e: Exception) {
+
             googleLoginButton.isEnabled = true
+
             showMessage(
                 "Could not open Google Sign-In: ${e.message}"
             )
         }
     }
 
-    // Exchanges Google's ID token for a Firebase credential.
+    // Authenticate using Google's ID token.
     private fun firebaseAuthWithGoogle(idToken: String) {
+
         val credential = GoogleAuthProvider.getCredential(
             idToken,
             null
@@ -197,8 +233,11 @@ class Login : AppCompatActivity() {
                 googleLoginButton.isEnabled = true
 
                 if (task.isSuccessful) {
+
                     openHome()
+
                 } else {
+
                     showMessage(
                         "Google authentication failed: " +
                                 (task.exception?.message
@@ -208,26 +247,30 @@ class Login : AppCompatActivity() {
             }
     }
 
-    // Logs in an existing email/password account.
+    // Login using email and password.
     private fun loginUser() {
+
         val email = emailInput.text.toString().trim()
 
-        // Do not trim passwords; spaces can be part of a password.
+        // Do not trim passwords.
         val password = passwordInput.text.toString()
 
         if (email.isBlank()) {
+
             emailInput.error = "Enter your email address."
             emailInput.requestFocus()
             return
         }
 
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+
             emailInput.error = "Enter a valid email address."
             emailInput.requestFocus()
             return
         }
 
         if (password.isEmpty()) {
+
             passwordInput.error = "Enter your password."
             passwordInput.requestFocus()
             return
@@ -241,8 +284,11 @@ class Login : AppCompatActivity() {
                 loginButton.isEnabled = true
 
                 if (task.isSuccessful) {
+
                     openHome()
+
                 } else {
+
                     showMessage(
                         "Login failed: " +
                                 (task.exception?.message
@@ -252,23 +298,32 @@ class Login : AppCompatActivity() {
             }
     }
 
-    // Opens Home after Firebase confirms authentication.
+    // Open the customer dashboard.
     private fun openHome() {
+
         val firebaseUser = auth.currentUser
 
         if (firebaseUser == null) {
-            showMessage("Unable to verify your signed-in account.")
+
+            showMessage(
+                "Unable to verify your signed-in account."
+            )
             return
         }
 
-        val userEmail = firebaseUser.email.orEmpty()
-
-        // Preserve the existing session handling in your project.
-        SessionManager.login(this, userEmail)
+        // Preserve existing session handling.
+        SessionManager.login(
+            this,
+            firebaseUser.email.orEmpty()
+        )
 
         showMessage("Login successful!")
 
-        val intent = Intent(this, Home::class.java).apply {
+        val intent = Intent(
+            this,
+            Home::class.java
+        ).apply {
+
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -277,7 +332,9 @@ class Login : AppCompatActivity() {
         finish()
     }
 
+    // Display messages.
     private fun showMessage(message: String) {
+
         Toast.makeText(
             this,
             message,

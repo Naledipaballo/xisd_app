@@ -57,12 +57,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:backgroundTint="@color/dark_blue"
+            android:backgroundTint="#003049"
             android:text="Track Order"
             android:textColor="#FFFFFF"
             android:textStyle="bold" />
 
-        <!-- Order details -->
+        <!-- Order details container -->
         <LinearLayout
             android:id="@+id/orderDetailsLayout"
             android:layout_width="match_parent"
@@ -74,6 +74,7 @@
             android:padding="18dp"
             android:visibility="gone">
 
+            <!-- Order information heading -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -82,6 +83,7 @@
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
+            <!-- Order status -->
             <TextView
                 android:id="@+id/orderStatus"
                 android:layout_width="match_parent"
@@ -92,6 +94,7 @@
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
+            <!-- Order date -->
             <TextView
                 android:id="@+id/orderDate"
                 android:layout_width="match_parent"
@@ -101,24 +104,58 @@
                 android:textColor="#444444"
                 android:textSize="14sp" />
 
+            <!-- Delivery address -->
             <TextView
                 android:id="@+id/deliveryAddress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
+                android:padding="12dp"
+                android:background="#F5F8FA"
                 android:text="Delivery Address:"
                 android:textColor="#444444"
                 android:textSize="14sp" />
 
+            <!-- Selected pharmacy section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="#DFEEF3"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Selected Pharmacy"
+                    android:textColor="#003049"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/pharmacyDetails"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingExtra="4dp"
+                    android:text="Pharmacy details will appear here."
+                    android:textColor="#444444"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+            <!-- Estimated delivery -->
             <TextView
                 android:id="@+id/estimatedDelivery"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="14dp"
                 android:text="Estimated Delivery:"
                 android:textColor="#444444"
                 android:textSize="14sp" />
 
+            <!-- Divider -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
@@ -126,7 +163,7 @@
                 android:layout_marginBottom="16dp"
                 android:background="#DDDDDD" />
 
-            <!-- Delivery progress -->
+            <!-- Delivery progress heading -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -135,6 +172,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
+            <!-- Order placed -->
             <TextView
                 android:id="@+id/progressPlaced"
                 android:layout_width="match_parent"
@@ -144,6 +182,7 @@
                 android:textColor="#777777"
                 android:textSize="15sp" />
 
+            <!-- Order confirmed -->
             <TextView
                 android:id="@+id/progressConfirmed"
                 android:layout_width="match_parent"
@@ -153,6 +192,7 @@
                 android:textColor="#777777"
                 android:textSize="15sp" />
 
+            <!-- Pharmacy preparing -->
             <TextView
                 android:id="@+id/progressPreparing"
                 android:layout_width="match_parent"
@@ -162,6 +202,7 @@
                 android:textColor="#777777"
                 android:textSize="15sp" />
 
+            <!-- Out for delivery -->
             <TextView
                 android:id="@+id/progressDelivery"
                 android:layout_width="match_parent"
@@ -171,6 +212,7 @@
                 android:textColor="#777777"
                 android:textSize="15sp" />
 
+            <!-- Delivered -->
             <TextView
                 android:id="@+id/progressDelivered"
                 android:layout_width="match_parent"
@@ -180,6 +222,7 @@
                 android:textColor="#777777"
                 android:textSize="15sp" />
 
+            <!-- Divider -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
@@ -187,7 +230,7 @@
                 android:layout_marginBottom="16dp"
                 android:background="#DDDDDD" />
 
-            <!-- Items -->
+            <!-- Order items heading -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -196,6 +239,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
+            <!-- Order items and payment summary -->
             <TextView
                 android:id="@+id/orderItems"
                 android:layout_width="match_parent"
