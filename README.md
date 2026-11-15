@@ -373,6 +373,11 @@ Version 1.0.0 marks the transition of **Pill Point Delivery** from an early conc
 
 ---
 
+## App Demonstration Video on Google Drive
+You can watch the complete walkthrough of the application features here:  
+**[Video Demonstration](https://drive.google.com/file/d/1KQxV-Nwm1eCV6Cqw92SS3HsYRRRYzl27/view?usp=drivesdk)**
+
+---
 ## Project Repository
 View the full source code, GitHub Actions workflows, and documentation here:  
-👉 **[GitHub Repository – xisd_app](https://github.com/Naledipaballo/xisd_app)**
+ **[GitHub Repository – xisd_app](https://github.com/Naledipaballo/xisd_app)**
