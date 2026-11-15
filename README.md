@@ -151,7 +151,7 @@ To make **Pill Point Delivery** accessible to real-world users, the application 
 * **Store Listing Assets:** Configured app icon, feature graphic, privacy policy declaration, and mobile screenshots.
 
 <p align="center">
-  <img src="assets/IMG-20261114-WA0000.jpg" alt="Google Play Console Release" width="650" /><br />
+  <img src="assets/IMG-20261114-WA0005.jpg" alt="Google Play Console Release" width="650" /><br />
   <i>Pill Point Delivery uploaded and configured on the Google Play Console</i>
 </p>
 
@@ -168,7 +168,7 @@ To make **Pill Point Delivery** accessible to real-world users, the application 
     <img src="assets/IMG-20261114-WA0002.jpg" width="48%" alt="Play Console Setup 2" />
     <br /><br />
     <img src="assets/IMG-20261114-WA0004.jpg" width="48%" alt="Play Console Setup 3" />
-    <img src="assets/IMG-20261114-WA0005.jpg" width="48%" alt="Play Console Setup 4" />
+    <img src="assets/IMG-20261114-WA0000.jpg" width="48%" alt="Play Console Setup 4" />
     <br /><br />
     <img src="assets/IMG-20261114-WA0007.jpg" width="48%" alt="Play Console Setup 5" />
     <img src="assets/IMG-20261114-WA0008.jpg" width="48%" alt="Play Console Setup 6" />
