@@ -142,4 +142,41 @@ Automated unit testing and manual functional testing verified core workflows (re
 * **Success Rate:** **100%**
 
 ---
+## Google Play Store Deployment
 
+To make **Pill Point Delivery** accessible to real-world users, the application was packaged as a signed **Android App Bundle (`.aab`)** and uploaded to the **Google Play Console**.
+
+* **Package Name:** `com.example.pillpoint`
+* **Release Track:** Internal / Closed Testing Track
+* **Store Listing Assets:** Configured app icon, feature graphic, privacy policy declaration, and mobile screenshots.
+
+<p align="center">
+  <img src="assets/IMG-20261114-WA0000.jpg" alt="Google Play Console Release" width="650" /><br />
+  <i>Pill Point Delivery uploaded and configured on the Google Play Console</i>
+</p>
+
+---
+
+### Google Play Console Setup Gallery
+
+<details>
+  <summary><b>Click to expand and view all deployment screenshots (12 images)</b></summary>
+  <br />
+  
+  <p align="center">
+    <img src="assets/IMG-20261114-WA0001.jpg" width="48%" alt="Play Console Setup 1" />
+    <img src="assets/IMG-20261114-WA0002.jpg" width="48%" alt="Play Console Setup 2" />
+    <br /><br />
+    <img src="assets/IMG-20261114-WA0004.jpg" width="48%" alt="Play Console Setup 3" />
+    <img src="assets/IMG-20261114-WA0005.jpg" width="48%" alt="Play Console Setup 4" />
+    <br /><br />
+    <img src="assets/IMG-20261114-WA0007.jpg" width="48%" alt="Play Console Setup 5" />
+    <img src="assets/IMG-20261114-WA0008.jpg" width="48%" alt="Play Console Setup 6" />
+    <br /><br />
+    <img src="assets/IMG-20261114-WA0009.jpg" width="48%" alt="Play Console Setup 7" />
+    <img src="assets/IMG-20261114-WA0010.jpg" width="48%" alt="Play Console Setup 8" />
+    <br /><br />
+    <img src="assets/IMG-20261114-WA0011.jpg" width="48%" alt="Play Console Setup 9" />
+    <img src="assets/IMG-20261114-WA0012.jpg" width="48%" alt="Play Console Setup 10" />
+  </p>
+</details>
