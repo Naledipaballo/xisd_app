@@ -1,0 +1,145 @@
+<div align="center">
+
+# Pill Point Delivery
+
+**Get your medication delivered fast, right to your doorstep!**
+
+An Android-based medication ordering and delivery application built with Kotlin, XML, and Firebase.
+
+[![Android Studio](https://img.shields.io/badge/Android%20Studio-3DDC84?style=for-the-badge&logo=android-studio&logoColor=white)](https://developer.android.com/studio)
+[![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
+[![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/features/actions)
+[![Google Play](https://img.shields.io/badge/Google%20Play-414141?style=for-the-badge&logo=google-play&logoColor=white)](https://play.google.com/store)
+
+</div>
+
+---
+
+## Table of Contents
+- [Project Overview](#-1-project-overview)
+- [Purpose of the Application](#-2-purpose-of-the-application)
+- [Target Users](#-3-target-users)
+- [Main Application Features](#-4-main-application-features)
+- [Innovative Features](#-5-innovative-features)
+- [Design Considerations](#-6-design-considerations)
+- [Technologies and Development Tools](#-7-technologies-and-development-tools)
+- [Firebase Integration & Database Structure](#-8-firebase-integration--database-structure)
+- [GitHub & GitHub Actions CI Pipeline](#-9-github--github-actions-ci-pipeline)
+- [Google Play Store Deployment](#-10-google-play-store-deployment)
+- [Application Testing & Results](#-11-application-testing--results)
+- [Release Notes & Prototype Updates](#-12-release-notes--prototype-updates)
+
+---
+
+## Project Overview
+
+**Pill Point Delivery** is an Android application developed to improve access to medication by providing customers with a convenient digital platform for ordering medication and accessing pharmacy services. 
+
+The application addresses challenges associated with traditional pharmacy visits, including long queues, transportation difficulties, illness, limited mobility, and general inconvenience for individuals requiring regular treatment.
+
+---
+## Purpose of the Application
+
+The main purpose of the application is to make accessing medication easier, faster, and more convenient by:
+* Reducing the need for customers to physically visit pharmacies.
+* Providing a convenient digital medication ordering platform.
+* Improving access to medication for elderly individuals and people with limited mobility.
+* Allowing customers to submit prescriptions electronically.
+* Helping customers remember their medication schedules.
+* Providing access to pharmacy locations and order tracking.
+
+---
+
+## Target Users
+
+* Individuals who require regular or chronic medication.
+* Elderly people who experience difficulties travelling to physical pharmacies.
+* People with disabilities or limited mobility.
+* Busy customers who prefer online ordering and home delivery.
+
+---
+
+## Main Application Features
+
+| Feature | Description |
+| :--- | :--- |
+| **User Registration & Login** | Secure customer account creation and authentication managed via Firebase Authentication. |
+| **Centralised Dashboard** | Clean navigation hub connecting customers to all core services. |
+| **Medication Shop** | Browse available medication, view pricing details, and add items to cart. |
+| **Shopping Cart** | Manage item quantities, calculate subtotals, apply delivery fees (R50.00), and sync data with Firebase Firestore. |
+| **Checkout** | Enter delivery details, select payment methods, and save orders directly to Firestore. |
+| **Prescription Upload** | Electronic submission of prescriptions to cut down on unnecessary physical visits. |
+| **Medication Reminders** | Schedule reminders to support adherence for chronic medication users. |
+| **Store Locator** | Map-based tool to help customers identify nearby pharmacy locations. |
+| **Order Tracking & My Orders** | View previously placed orders and check available delivery status updates. |
+| **My Account** | View and manage personal customer profile information. |
+
+---
+
+## Innovative Features
+
+* **Integrated Medication Ordering:** Seamless workflow from medication browsing and cart management straight to checkout in one app.
+* **Electronic Prescription Submission:** Eliminates unnecessary travel by digitizing prescription drop-offs.
+* **Medication Reminders:** Built-in adherence tools for patients managing daily schedules.
+* **Pharmacy Store Locator:** Interactive location support for finding nearby pharmacy services.
+* **Firebase-Based Data Management:** Cloud Firestore persistence ensuring user carts and orders stay synced across sessions.
+* **Automated CI/CD Pipeline:** Continuous testing and building via GitHub Actions.
+
+---
+
+## Design Considerations
+
+* **User Interface Design:** Uses a healthcare-inspired colour palette featuring **Light Blue (`#DFEEF3`)**, **Dark Blue (`#003049`)**, **White (`#FFFFFF`)**, and supporting red accents for visual consistency.
+* **Navigation & Layout:** Combines a centralised dashboard with a structured navigation drawer to reduce the steps needed to complete an order.
+* **Accessibility:** Designed specifically for elderly individuals and people with limited mobility with clear typography and straightforward workflows.
+* **Data Management & Security:** Protected by Firebase Authentication and Firestore security rules so customers can only access authorised personal and prescription records.
+---
+
+## Technologies and Development Tools
+
+| Technology | Purpose |
+| :--- | :--- |
+| **Android Studio** | Main IDE (Compile/Target SDK: 36, Min SDK: 24) |
+| **Kotlin & XML** | Core application logic and UI layout design |
+| **Firebase Authentication** | User registration, login, and UID management |
+| **Firebase Cloud Firestore** | Cloud NoSQL database storage |
+| **Gradle & Java 17** | Build automation and dependency management |
+| **GitHub & GitHub Actions** | Version control, automated unit testing, and CI builds |
+| **Google Play Console** | Release packaging (AAB) and Play Store distribution |
+
+---
+
+## Firebase Integration & Database Structure
+
+Cloud Firestore stores and retrieves application records tied to each customer's unique Firebase UID across seven main collections:
+* `users` – Customer account and profile information.
+* `medications` – Medication catalog and product pricing details.
+* `cart` – Customer-specific shopping cart items.
+* `orders` – Submitted customer orders and delivery details.
+* `prescriptions` – Electronic prescription submission records.
+* `reminders` – Medication reminder schedules.
+* `pharmacies` – Pharmacy locations and store details.
+
+---
+
+## GitHub & GitHub Actions CI Pipeline
+
+The repository uses GitHub Actions (`Pill Point Delivery - Automated Tests`) to automatically test and build the application on pushes and pull requests:
+1. Checks out repository code and configures **Java 17** and **Gradle**.
+2. Securely restores `google-services.json` using the encrypted GitHub secret `FIREBASE_CONFIG_BASE64`.
+3. Executes unit test suites (`AppValidationTest` and `ReminderValidationTest`).
+4. Builds the Android application and uploads test reports as workflow artifacts.
+
+---
+## Application Testing & Results
+
+Automated unit testing and manual functional testing verified core workflows (registration, login, cart calculations, Firestore order creation, and navigation):
+
+* **Total Unit Tests:** 37
+* **Successful Tests:** 37
+* **Failed Tests:** 0
+* **Success Rate:** **100%**
+
+---
+
