@@ -219,6 +219,28 @@ To make **Pill Point Delivery** accessible to real-world users, the application 
 ---
 
 ## Release Notes & Prototype Updates
+##  Release Notes
+
+### Version 1.0.0 — Final Production Release (November 2026)
+
+####  New Features
+* **Firebase Cloud Migration:** Transitioned completely from the early prototype backend to **Firebase Authentication** and **Cloud Firestore** for real-time user authentication, live inventory sync, and cloud-persisted orders.
+* **Live Cart & Dynamic Checkout:** Implemented real-time cart calculations with automatic **R50.00 delivery fee** integration and instant order generation.
+* **Electronic Prescription Workflow:** Added customer digital prescription uploads paired with a dedicated pharmacist/admin verification queue (`Approve` / `Reject`).
+* **Medication Adherence Reminders:** Built custom dosage scheduling and active reminder tracking to support patient medication compliance.
+* **Pharmacy Store Locator:** Integrated interactive pharmacy search and location discovery.
+* **Role-Based Admin Portal:** Introduced a restricted administrative dashboard for managing incoming orders, viewing itemized order details, and reviewing submitted prescriptions.
+
+####  Improvements & Polish
+* **UI/UX Redesign:** Updated all 19 customer and admin screens with a cohesive, accessible healthcare color palette and streamlined navigation drawer.
+* **Automated Quality Assurance:** Added a suite of **37 automated unit tests** executed via **GitHub Actions CI** on every commit.
+* **Google Play Store Readiness:** Packaged as a signed **Android App Bundle (`.aab`)** (`com.example.pillpoint`) and deployed to the Google Play Console testing track.
+
+#### Bug Fixes
+* Resolved cart item state resets occurring during screen rotation or app restarts by syncing directly with Firestore.
+* Fixed navigation routing edge cases between the Splash screen, Customer Login, and Admin Login portals.
+* Corrected delivery fee calculation rounding on multi-item checkout summaries.
+---
 
 ### Version 1.0.0 – Final Project Release
 
